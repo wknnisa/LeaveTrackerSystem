@@ -26,6 +26,15 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+
+                    @{
+                        var role = Context.Session.GetString("Role");
+                    }
+
+                    @if (!string.IsNullOrEmpty(role))
+                    {
+                        <span class="navbar-text text-muted">Logged in as: <strong>@role</strong></span>
+                    }
                 </div>
             </div>
         </nav>
