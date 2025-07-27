@@ -4,6 +4,7 @@ using LeaveTrackerSystem.Infrastructure.Mock;
 using LeaveTrackerSystem.WebApp.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using static LeaveTrackerSystem.Infrastructure.Mock.InMemoryData;
 
 namespace LeaveTrackerSystem.WebApp.Controllers
 {
@@ -38,18 +39,45 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 return View(model);
             }
 
-            var email = HttpContext.Session.GetString("Email");
-            var leaveTypeName = Enum.IsDefined(typeof(LeaveType), model.LeaveTypeId) ? ((LeaveType)model.LeaveTypeId).ToString() : "Unknown";
+            var daysRequested = (model.EndDate - model.StartDate).TotalDays  + 1;
+
+            //var email = HttpContext.Session.GetString("Email");
+            //var leaveTypeName = Enum.IsDefined(typeof(LeaveType), model.LeaveTypeId) ? ((LeaveType)model.LeaveTypeId).ToString() : "Unknown";
+
+            var leaveType = (LeaveType)model.LeaveTypeId;
+            var email = HttpContext.Session.GetString("Email") ?? "unknown@example.com";
+
+            if (!LeaveBalanceStore.UsedLeave.ContainsKey(email))
+            {
+                LeaveBalanceStore.UsedLeave[email] = new Dictionary<LeaveType, int>();
+            }
+
+            if (!LeaveBalanceStore.UsedLeave[email].ContainsKey(leaveType))
+            {
+                LeaveBalanceStore.UsedLeave[email][leaveType] = 0;
+            }
+
+            var used = LeaveBalanceStore.UsedLeave[email][leaveType];
+            var max = LeaveBalanceStore.MaxBalance.ContainsKey(leaveType)? LeaveBalanceStore.MaxBalance[leaveType]:0 ;
+
+            if (used + daysRequested > max) 
+            {
+                TempData["Error"] = "Insufficient leave balance for this leave type.";
+                model.LeaveTypes = GetLeaveTypeOptions() ;
+                return View(model);
+            }
 
             InMemoryData.LeaveRequests.Add(new LeaveRequest
             {
-                Email = email ?? "unknown@example.com",
+                Email = email,
                 StartDate = model.StartDate,
                 EndDate = model.EndDate,
-                LeaveType = leaveTypeName,
+                LeaveType = leaveType.ToString(),
                 Reason = model.Reason,
                 Status = LeaveStatus.Pending
             });
+
+            LeaveBalanceStore.UsedLeave[email][leaveType] += (int)daysRequested;
 
             // TEMP: Simulating successful submission - no database logic yet
             TempData["Success"] = "Leave request submitted successfully and marked as Pending.";
