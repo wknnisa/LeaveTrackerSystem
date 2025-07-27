@@ -1,5 +1,6 @@
 ﻿using LeaveTrackerSystem.Domain.Entities;
 using LeaveTrackerSystem.Domain.Enums;
+using LeaveTrackerSystem.Infrastructure.Mock;
 using LeaveTrackerSystem.WebApp.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -8,7 +9,6 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 {
     public class EmployeeController : Controller
     {
-        private static readonly List<LeaveRequest> LeaveRequests = new();
         public IActionResult Index()
         {
             if (HttpContext.Session.GetString("Role") != "Employee")
@@ -39,9 +39,9 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             }
 
             var email = HttpContext.Session.GetString("Email");
-            var leaveTypeName = model.LeaveTypes?.FirstOrDefault(l => l.Value == model.LeaveTypeId.ToString())?.Text ?? "Unknown";
+            var leaveTypeName = Enum.IsDefined(typeof(LeaveType), model.LeaveTypeId) ? ((LeaveType)model.LeaveTypeId).ToString() : "Unknown";
 
-            LeaveRequests.Add(new LeaveRequest
+            InMemoryData.LeaveRequests.Add(new LeaveRequest
             {
                 Email = email ?? "unknown@example.com",
                 StartDate = model.StartDate,
@@ -58,18 +58,18 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
         private List<SelectListItem> GetLeaveTypeOptions()
         {
-            return new List<SelectListItem>
+            return Enum.GetValues(typeof(LeaveType)).Cast<LeaveType>().Where(e => e != LeaveType.Unknown)
+            .Select(e => new SelectListItem
             {
-                new SelectListItem { Value = "1", Text = "Annual Leave" },
-                new SelectListItem { Value = "2", Text = "Medical Leave" },
-                new SelectListItem { Value = "3", Text = "Emergency Leave" }
-            };
+                Text = e.ToString(),
+                Value = ((int)e).ToString()
+            }).ToList();
         }
 
         public IActionResult MyRequests()
         { 
             var email = HttpContext.Session.GetString("Email");
-            var myRequests = LeaveRequests.Where(r => r.Email == email).ToList();
+            var myRequests = InMemoryData.LeaveRequests.Where(r => r.Email == email).ToList();
 
             return View(myRequests);
         }
