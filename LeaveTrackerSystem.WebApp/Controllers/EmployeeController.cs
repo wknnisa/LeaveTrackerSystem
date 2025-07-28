@@ -94,10 +94,25 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             }).ToList();
         }
 
-        public IActionResult MyRequests()
+        public IActionResult MyRequests(string? status)
         { 
             var email = HttpContext.Session.GetString("Email");
             var myRequests = InMemoryData.LeaveRequests.Where(r => r.Email == email).ToList();
+
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeaveStatus>(status, out var parsed))
+            {
+                myRequests = myRequests.Where(r => r.Status == parsed).ToList();
+            }
+
+            myRequests = myRequests.OrderBy(r => (int)r.Status).ToList();
+
+            ViewBag.statusOptions = new List<SelectListItem>
+            {
+                new SelectListItem { Text = "All", Value = "", Selected = string.IsNullOrEmpty(status) },
+                new SelectListItem { Text = "Pending", Value = "Pending", Selected = status == "Pending" },
+                new SelectListItem { Text = "Approved", Value = "Approved", Selected = status == "Approved" },
+                new SelectListItem { Text = "Rejected", Value = "Rejected", Selected = status == "Rejected" }
+            };
 
             return View(myRequests);
         }
