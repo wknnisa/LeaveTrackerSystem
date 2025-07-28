@@ -1,6 +1,7 @@
 ﻿using LeaveTrackerSystem.Domain.Enums;
 using LeaveTrackerSystem.Infrastructure.Mock;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace LeaveTrackerSystem.WebApp.Controllers
 {
@@ -15,18 +16,32 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             return View();
         }
 
-        public IActionResult PendingRequests()
+        public IActionResult AllRequests(string? status)
         {
-            var role = HttpContext.Session.GetString("Role");
-
-            if (role != "Manager" && role != "Admin")
+            if (HttpContext.Session.GetString("Role") != "Manager")
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var pending = InMemoryData.LeaveRequests.Where(r => r.Status == LeaveStatus.Pending).ToList();
+            var email = HttpContext.Session.GetString("Email");
+            var requests = InMemoryData.LeaveRequests.Where(r => r.Email != email).ToList();
 
-            return View(pending);
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeaveStatus>(status, out var parsed))
+            {
+                requests = requests.Where(r => r.Status == parsed).ToList();
+            }
+
+            requests = requests.OrderBy(r => (int)r.Status).ToList();
+
+            ViewBag.statusOptions = new List<SelectListItem>
+            {
+                new SelectListItem { Text = "All", Value = "", Selected = string.IsNullOrEmpty(status) },
+                new SelectListItem { Text = "Pending", Value = "Pending", Selected = status == "Pending" },
+                new SelectListItem { Text = "Approved", Value = "Approved", Selected = status == "Approved" },
+                new SelectListItem { Text = "Rejected", Value = "Rejected", Selected = status == "Rejected" }
+            };
+
+            return View(requests);
         }
 
         [HttpPost]
@@ -39,7 +54,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 request.Status = LeaveStatus.Approved;
             }
 
-            return RedirectToAction("PendingRequests");
+            return RedirectToAction("AllRequests");
         }
 
         [HttpPost]
@@ -52,7 +67,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 request.Status = LeaveStatus.Rejected;
             }
 
-            return RedirectToAction("PendingRequests");
+            return RedirectToAction("AllRequests");
         }
     }
 }

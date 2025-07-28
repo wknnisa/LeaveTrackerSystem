@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LeaveTrackerSystem.Infrastructure.Mock;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LeaveTrackerSystem.WebApp.Controllers
 {
@@ -11,6 +12,20 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 return RedirectToAction("Login", "Account");
             }
             return View();
+        }
+
+        public IActionResult AllRequests()
+        {
+            var role = HttpContext.Session.GetString("Role");
+
+            if (role != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var allRequests = InMemoryData.LeaveRequests;
+
+            return View(allRequests);
         }
     }
 }

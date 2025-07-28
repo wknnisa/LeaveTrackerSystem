@@ -37,7 +37,13 @@
                         @if (Context.Session.GetString("Role") == "Manager")
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Manager" asp-action="PendingRequests">Pending Requests</a>
+                                <a class="nav-link text-dark" asp-controller="Manager" asp-action="AllRequests">Pending Requests</a>
+                            </li>
+                        }
+                        @if (Context.Session.GetString("Role") == "Admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="AllRequests">All Requests</a>
                             </li>
                         }
                         @if (Context.Session.GetString("Role") != null)

@@ -6,6 +6,13 @@
 
 <h2>Pending Leave Requests</h2>
 
+<form method="get" asp-action="AllRequests" class="mb-3">
+    <label for="status">Filter by Status:</label>
+    @Html.DropDownList("status", (List<SelectListItem>)ViewBag.StatusOptions, new {
+    @class = "form-select w-auto d-inline-block", onchange = "this.form.submit();"
+    })
+</form>
+
 @if (Model.Any())
 {
     <table class="table table-bordered table-striped">
@@ -45,5 +52,5 @@
 }
 else
 {
-    <div class="alert alert-info">No pending leave requests found.</div>
+    <div class="alert alert-info">No leave requests found.</div>
 }
