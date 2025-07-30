@@ -1,4 +1,5 @@
-﻿using LeaveTrackerSystem.Domain.Entities;
+﻿using LeaveTrackerSystem.Application.Services;
+using LeaveTrackerSystem.Domain.Entities;
 using LeaveTrackerSystem.Domain.Enums;
 using LeaveTrackerSystem.Infrastructure.Mock;
 using LeaveTrackerSystem.WebApp.Models.ViewModels;
@@ -10,6 +11,13 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 {
     public class EmployeeController : Controller
     {
+        private readonly LeaveBalanceService _leaveBalanceService;
+
+        public EmployeeController(LeaveBalanceService leaveBalanceService)
+        {
+            _leaveBalanceService = leaveBalanceService;
+        }
+
         public IActionResult Index()
         {
             if (HttpContext.Session.GetString("Role") != "Employee")
@@ -85,6 +93,29 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             // TEMP: Simulating successful submission - no database logic yet
             TempData["Success"] = "Leave request submitted successfully and marked as Pending.";
             return RedirectToAction("Submit");
+        }
+
+        public IActionResult LeaveSummary()
+        {
+            var email = HttpContext.Session.GetString("Email");
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var summary = new Dictionary<string, (int used, int remaining)>();
+
+            foreach (LeaveType type in Enum.GetValues(typeof(LeaveType)))
+            {
+                int used = _leaveBalanceService.GetUsedLeaveDays(email, type);
+
+                int remaining = _leaveBalanceService.GetRemainingLeave(email, type);
+
+                summary[type.ToString()] = (used, remaining);
+            }
+
+            return View(summary);
         }
 
         private List<SelectListItem> GetLeaveTypeOptions()

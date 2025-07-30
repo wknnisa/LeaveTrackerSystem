@@ -1,0 +1,27 @@
+﻿@model Dictionary<string, (int used, int remaining)>
+
+@{
+    ViewData["Title"] = "Leave Summary";
+}
+
+<h2>Leave Summary by Type</h2>
+
+<table class="table table table-striped">
+    <thead class="table-dark text-center">
+        <tr>
+            <th>Leave Type</th>
+            <th>Used</th>
+            <th>Remaining</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Key</td>
+                <td class="text-center">@item.Value.used</td>
+                <td class="text-center">@item.Value.remaining</td>
+            </tr>
+        }
+    </tbody>
+</table>
