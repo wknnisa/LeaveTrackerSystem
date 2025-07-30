@@ -72,7 +72,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 Email = email,
                 StartDate = model.StartDate,
                 EndDate = model.EndDate,
-                LeaveType = leaveType.ToString(),
+                LeaveType = leaveType,
                 Reason = model.Reason,
                 Status = LeaveStatus.Pending
             });

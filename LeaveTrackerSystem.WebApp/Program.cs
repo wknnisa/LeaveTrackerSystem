@@ -1,9 +1,17 @@
+using LeaveTrackerSystem.Application.Interfaces;
+using LeaveTrackerSystem.Application.Services;
+using LeaveTrackerSystem.Infrastructure.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-//Add session services with configuration
+// Register services and repositories
+builder.Services.AddScoped<ILeaveRequestRepository, InMemoryLeaveRequestRepository>();
+builder.Services.AddScoped<LeaveBalanceService>();
+
+// Add session services with configuration
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(20);

@@ -8,7 +8,7 @@ namespace LeaveTrackerSystem.Domain.Entities
         public string Email { get; set; } = null!;
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public string LeaveType { get; set; } = null!;
+        public LeaveType LeaveType { get; set; }
         public string Reason { get; set; } = null!;
         public LeaveStatus Status { get; set; } = LeaveStatus.Pending;
     }
