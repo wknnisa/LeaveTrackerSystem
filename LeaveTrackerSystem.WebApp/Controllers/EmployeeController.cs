@@ -67,8 +67,11 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 return View(model);
             }
 
+            int nextId = InMemoryData.LeaveRequests.Any() ? InMemoryData.LeaveRequests.Max(r => r.Id) + 1 : 1;
+
             InMemoryData.LeaveRequests.Add(new LeaveRequest
             {
+                Id = nextId,
                 Email = email,
                 StartDate = model.StartDate,
                 EndDate = model.EndDate,
