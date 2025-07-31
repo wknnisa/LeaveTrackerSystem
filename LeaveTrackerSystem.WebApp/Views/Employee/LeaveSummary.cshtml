@@ -30,6 +30,9 @@
 <h3>Leave Usage Breakdown</h3>
 <canvas id="leavePieChart" width="400" height="400"></canvas>
 
+<h3>Leave Requests Per Month</h3>
+<canvas id="leaveBarChart" width="600" height="300"></canvas>
+
 @section Scripts {
     <script>
         const labels = JSON.parse('@Html.Raw(ViewBag.LabelsJson ?? "[]")');
@@ -60,5 +63,39 @@
                 }
             }
         })
+    </script>
+
+    <script>
+        const barLabels = JSON.parse('@Html.Raw(ViewBag.BarLabelsJson ?? "[]")');
+        const barData = JSON.parse('@Html.Raw(ViewBag.BarDataJson ?? "[]")');
+
+        const barCtx = document.getElementById('leaveBarChart').getContext('2d');
+        const barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: barLabels,
+                datasets: [{
+                    label: 'Approved Leave Requests',
+                    data: barData,
+                    backgroundColor: '#36A2EB'
+                }]
+            },
+           options: {
+               responsive: true,
+               plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Monthly Leave Usage'
+                    }
+               },
+               scales: {
+                   y: {
+                       beginAtZero: true,
+                       precision: 0
+                   }
+               }
+           }
+        });
     </script>
 }

@@ -50,9 +50,6 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             var daysRequested = (model.EndDate - model.StartDate).TotalDays  + 1;
 
-            //var email = HttpContext.Session.GetString("Email");
-            //var leaveTypeName = Enum.IsDefined(typeof(LeaveType), model.LeaveTypeId) ? ((LeaveType)model.LeaveTypeId).ToString() : "Unknown";
-
             var leaveType = (LeaveType)model.LeaveTypeId;
             var email = HttpContext.Session.GetString("Email") ?? "unknown@example.com";
 
@@ -128,6 +125,18 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             ViewBag.LabelsJson = JsonConvert.SerializeObject(usedLeaveByType.Keys);
             ViewBag.DataJson = JsonConvert.SerializeObject(usedLeaveByType.Values);
+
+            var monthlyUsage = InMemoryData.LeaveRequests
+                .Where(r => r.Email == email && r.Status == LeaveStatus.Approved)
+                .GroupBy(r => new { r.StartDate.Year, r.StartDate.Month })
+                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                .ToDictionary(
+                    g => $"{g.Key.Month:00}/{g.Key.Year}",
+                    g => g.Count()
+                );
+
+            ViewBag.BarLabelsJson = JsonConvert.SerializeObject(monthlyUsage.Keys);
+            ViewBag.BarDataJson = JsonConvert.SerializeObject(monthlyUsage.Values);
 
             return View(summary);
         }
