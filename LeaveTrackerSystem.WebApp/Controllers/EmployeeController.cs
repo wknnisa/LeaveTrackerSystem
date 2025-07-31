@@ -5,6 +5,7 @@ using LeaveTrackerSystem.Infrastructure.Mock;
 using LeaveTrackerSystem.WebApp.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 using static LeaveTrackerSystem.Infrastructure.Mock.InMemoryData;
 
 namespace LeaveTrackerSystem.WebApp.Controllers
@@ -114,6 +115,19 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
                 summary[type.ToString()] = (used, remaining);
             }
+
+            var usedLeaveByType = new Dictionary<string, int>();
+
+            foreach (LeaveType type in Enum.GetValues(typeof(LeaveType)))
+            {
+                int used = _leaveBalanceService.GetUsedLeaveDays(email, type);
+                usedLeaveByType[type.ToString()] = used;
+            }
+
+            ViewBag.PieChartData = usedLeaveByType;
+
+            ViewBag.LabelsJson = JsonConvert.SerializeObject(usedLeaveByType.Keys);
+            ViewBag.DataJson = JsonConvert.SerializeObject(usedLeaveByType.Values);
 
             return View(summary);
         }

@@ -1,4 +1,5 @@
 ﻿@model Dictionary<string, (int used, int remaining)>
+@using Newtonsoft.Json;
 
 @{
     ViewData["Title"] = "Leave Summary";
@@ -25,3 +26,39 @@
         }
     </tbody>
 </table>
+
+<h3>Leave Usage Breakdown</h3>
+<canvas id="leavePieChart" width="400" height="400"></canvas>
+
+@section Scripts {
+    <script>
+        const labels = JSON.parse('@Html.Raw(ViewBag.LabelsJson ?? "[]")');
+        const data = JSON.parse('@Html.Raw(ViewBag.DataJson ?? "[]")');
+
+        const ctx = document.getElementById('leavePieChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Leave Used',
+                    data: data,
+                    backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Leave Usage Breakdown'
+                    }
+                }
+            }
+        })
+    </script>
+}

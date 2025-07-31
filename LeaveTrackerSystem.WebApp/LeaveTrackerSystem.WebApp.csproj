@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LeaveTrackerSystem.Application\LeaveTrackerSystem.Application.csproj" />
     <ProjectReference Include="..\LeaveTrackerSystem.Infrastructure\LeaveTrackerSystem.Infrastructure.csproj" />
   </ItemGroup>
