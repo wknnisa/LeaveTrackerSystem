@@ -15,7 +15,15 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var role = HttpContext.Session.GetString("Role");
+
+            return role switch
+            {
+                "Employee" => RedirectToAction("Dashboard", "Employee"),
+                "Manager" => RedirectToAction("Dashboard", "Manager"),
+                "Admin" => RedirectToAction("AllRequests", "Admin"),
+                _=> RedirectToAction("Login", "Account")
+            };
         }
 
         public IActionResult Privacy()

@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Pending Leave Requests";
+
 }
 
 <h2>Pending Leave Requests</h2>
@@ -15,7 +16,7 @@
 
 @if (Model.Any())
 {
-    <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-hover align-middle">
         <thead class="table-dark text-center">
             <tr>
                 <th>Email</th>
@@ -37,13 +38,20 @@
                     <td>@request.EndDate.ToShortDateString()</td>
                     <td>@request.Reason</td>
                     <td>@request.Status</td>
-                    <td>
-                        <form method="post" asp-action="Approve" asp-route-id="@request.Id" style="display:inline;">
-                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                        </form>
-                        <form method="post" asp-action="Reject" asp-route-id="@request.Id" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                        </form>
+                    <td class="text-center">
+                        @if (request.Status == LeaveStatus.Pending)
+                        {
+                            <form method="post" asp-action="Approve" asp-route-id="@request.Id" style="display:inline;">
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form method="post" asp-action="Reject" asp-route-id="@request.Id" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
                     </td>
                 </tr>
             }
