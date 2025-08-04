@@ -7,6 +7,7 @@ namespace LeaveTrackerSystem.WebApp.Services.Pdf
     {
         public byte[] GenerateLeaveRequestPdf()
         {
+            // Placeholder: basic blank PDF
             var document = new PdfDocument();
             var page = document.AddPage();
             var gfx = XGraphics.FromPdfPage(page);
