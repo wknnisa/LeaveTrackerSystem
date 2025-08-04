@@ -184,13 +184,16 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Dummy leave summary data (simulate real values for now)
-            var summary = new Dictionary<string, (int used, int remaininig)>
+            // Use LeaveBalanceService instead of manual calculation
+            var summary = new Dictionary<string, (int used, int remaininig)>();
+
+            foreach (LeaveType type in Enum.GetValues(typeof(LeaveType)))
             {
-                { "Annual", (5, 9) },
-                { "Medical", (2, 12) },
-                { "Emergency", (1, 13) }
-            };
+                int used = _leaveBalanceService.GetUsedLeaveDays(email, type);
+                int remaining = _leaveBalanceService.GetRemainingLeave(email, type);
+
+                summary[type.ToString()] = (used, remaining);
+            }
 
             var pdfService = new LeavePdfService();
             var pdfBytes = pdfService.GenerateLeaveRequestPdf(summary);

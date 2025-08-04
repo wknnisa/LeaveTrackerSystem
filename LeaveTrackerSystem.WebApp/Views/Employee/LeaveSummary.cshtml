@@ -16,7 +16,10 @@
 
 <div class="container">
 
-    <h2>Leave Summary by Type</h2>
+    <div class="d-flex justify-content-betweenq align-items-center mb-3">
+    <h2 class="mb-0">Leave Summary by Type</h2>
+        <a href="@Url.Action("ExportSummary", "Employee")" class="btn btn-outline-primary ms-3">Download PDF</a>
+    </div>
 
     <table class="table table table-striped">
         <thead class="table-dark text-center">
@@ -47,6 +50,7 @@
     <div class="chart-container" style="max-width: 700px; margin: 0 auto;">
         <canvas id="leaveBarChart" height="300"></canvas>
     </div>
+    
 </div>
 
 @section Scripts {
