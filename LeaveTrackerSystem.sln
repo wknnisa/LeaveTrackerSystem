@@ -10,6 +10,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeaveTrackerSystem.Infrastructure", "LeaveTrackerSystem.Infrastructure\LeaveTrackerSystem.Infrastructure.csproj", "{F3E476D8-798D-48BD-8521-0F9467C81616}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeaveTrackerSystem.Testing", "LeaveTrackerSystem.Testing\LeaveTrackerSystem.Testing.csproj", "{8B3FAC22-70CB-4EDE-B564-9F0DD953A678}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F3E476D8-798D-48BD-8521-0F9467C81616} = {F3E476D8-798D-48BD-8521-0F9467C81616}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01_Domain", "01_Domain", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
