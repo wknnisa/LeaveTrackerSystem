@@ -3,6 +3,7 @@ using LeaveTrackerSystem.Domain.Entities;
 using LeaveTrackerSystem.Domain.Enums;
 using LeaveTrackerSystem.Infrastructure.Mock;
 using LeaveTrackerSystem.WebApp.Models.ViewModels;
+using LeaveTrackerSystem.WebApp.Services.Pdf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
@@ -172,6 +173,29 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             };
 
             return View(myRequests);
+        }
+
+        public IActionResult ExportSummary()
+        {
+            var email = HttpContext.Session.GetString("Email");
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Dummy leave summary data (simulate real values for now)
+            var summary = new Dictionary<string, (int used, int remaininig)>
+            {
+                { "Annual", (5, 9) },
+                { "Medical", (2, 12) },
+                { "Emergency", (1, 13) }
+            };
+
+            var pdfService = new LeavePdfService();
+            var pdfBytes = pdfService.GenerateLeaveRequestPdf(summary);
+
+            return File(pdfBytes, "application/pdf", "LeaveSummary.pdf");
         }
     }
 }
