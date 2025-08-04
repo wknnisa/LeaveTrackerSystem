@@ -175,28 +175,24 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             return View(myRequests);
         }
 
-        public IActionResult ExportSummary()
+        public IActionResult ExportSummary(string? status = null)
         {
-            var email = HttpContext.Session.GetString("Email");
+            var email = HttpContext.Session.GetString("Email") ?? "unknown@example.com";
 
             if (string.IsNullOrEmpty(email))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            // Use LeaveBalanceService instead of manual calculation
-            var summary = new Dictionary<string, (int used, int remaininig)>();
+            LeaveStatus? statusFilter = null;
 
-            foreach (LeaveType type in Enum.GetValues(typeof(LeaveType)))
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeaveStatus>(status, true, out var parsedStatus))
             {
-                int used = _leaveBalanceService.GetUsedLeaveDays(email, type);
-                int remaining = _leaveBalanceService.GetRemainingLeave(email, type);
-
-                summary[type.ToString()] = (used, remaining);
+                statusFilter = parsedStatus;
             }
 
-            var pdfService = new LeavePdfService();
-            var pdfBytes = pdfService.GenerateLeaveRequestPdf(summary);
+            var summary = _leaveBalanceService.GetLeaveSummary(email, statusFilter);
+            var pdfBytes = new LeavePdfService().GenerateLeaveRequestPdf(summary);
 
             return File(pdfBytes, "application/pdf", "LeaveSummary.pdf");
         }
