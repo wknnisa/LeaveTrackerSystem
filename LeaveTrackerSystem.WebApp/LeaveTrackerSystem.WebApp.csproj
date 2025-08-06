@@ -16,8 +16,4 @@
     <ProjectReference Include="..\LeaveTrackerSystem.Infrastructure\LeaveTrackerSystem.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\img\" />
-  </ItemGroup>
-
 </Project>
