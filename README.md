@@ -59,6 +59,7 @@ Follows **Onion Architecture**:
 ![Leave Summary Table](docs/screenshots/LeaveSummaryTable_v1.0.png)
 ![Leave Usage Pie Chart](docs/screenshots/LeaveSummaryPieChart_v1.0.png)
 ![Monthly Leave Bar Chart](docs/screenshots/LeaveSummaryBarChart_v1.0.png)
+![PDF Export](docs/screenshots/LeaveSummaryPdf_v1.0.png)
 
 ---
 
