@@ -19,9 +19,9 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             return role switch
             {
-                "Employee" => RedirectToAction("Dashboard", "Employee"),
-                "Manager" => RedirectToAction("Dashboard", "Manager"),
-                "Admin" => RedirectToAction("AllRequests", "Admin"),
+                "Employee" => RedirectToAction("Index", "Employee"),
+                "Manager" => RedirectToAction("Index", "Manager"),
+                "Admin" => RedirectToAction("Index", "Admin"),
                 _=> RedirectToAction("Login", "Account")
             };
         }
