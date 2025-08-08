@@ -1,4 +1,5 @@
-﻿using LeaveTrackerSystem.WebApp.Models;
+﻿using LeaveTrackerSystem.Domain.Enums;
+using LeaveTrackerSystem.Infrastructure.Persistence;
 using LeaveTrackerSystem.WebApp.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,12 +7,12 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 {
     public class AccountController : Controller
     {
-        private static readonly List<User> seedUsers = new()
+        private readonly LeaveTrackerDbContext _dbContext;
+
+        public AccountController(LeaveTrackerDbContext dbContext)
         {
-            new User { Email = "admin@example.com", Password = "admin123", Role = "Admin" },
-            new User { Email = "manager@example.com", Password = "manager123", Role = "Manager" },
-            new User { Email = "employee@example.com", Password = "employee123", Role = "Employee" }
-        };
+            _dbContext = dbContext;
+        }
 
         [HttpGet]
         public IActionResult Login()
@@ -27,8 +28,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 return View(model);
             }
 
-            var user = seedUsers.FirstOrDefault(u => u.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase) 
-            && u.Password == model.Password);
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == model.Email && u.PasswordHash == model.Password);
 
             if (user == null)
             {
@@ -37,20 +37,14 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             }
 
             HttpContext.Session.SetString("Email", user.Email);
-            HttpContext.Session.SetString("Role", user.Role);
+            HttpContext.Session.SetString("Role", user.Role.ToString());
 
-            if (user.Role == "Admin")
+            return user.Role switch
             {
-                return RedirectToAction("Index", "Admin");
-            }
-            else if (user.Role == "Manager")
-            {
-                return RedirectToAction("Index", "Manager");
-            }
-            else
-            {
-                return RedirectToAction("Index", "Employee");
-            }
+                RoleEnum.Admin => RedirectToAction("Index", "Admin"),
+                RoleEnum.Manager => RedirectToAction("Index", "Manager"),
+                _ => RedirectToAction("Index", "Employee")
+            };
         }
 
         public IActionResult Logout()

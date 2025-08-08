@@ -1,14 +1,19 @@
 using LeaveTrackerSystem.Application.Interfaces;
 using LeaveTrackerSystem.Application.Services;
+using LeaveTrackerSystem.Infrastructure.Persistence;
 using LeaveTrackerSystem.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<LeaveTrackerDbContext>(options => 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
 // Register services and repositories
-builder.Services.AddScoped<ILeaveRequestRepository, InMemoryLeaveRequestRepository>();
+builder.Services.AddScoped<ILeaveRequestRepository, EfLeaveRequestRepository>();
 builder.Services.AddScoped<LeaveBalanceService>();
 
 // Add session services with configuration

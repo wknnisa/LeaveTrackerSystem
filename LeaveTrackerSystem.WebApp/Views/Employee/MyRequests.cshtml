@@ -29,7 +29,7 @@
             @foreach (var request in Model)
             {
                 <tr>
-                    <td>@request.LeaveType</td>
+                    <td>@request.LeaveType?.Name</td>
                     <td>@request.StartDate.ToShortDateString()</td>
                     <td>@request.EndDate.ToShortDateString()</td>
                     <td>@request.Reason</td>

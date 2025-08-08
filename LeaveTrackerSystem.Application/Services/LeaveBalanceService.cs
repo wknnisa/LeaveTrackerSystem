@@ -12,21 +12,21 @@ namespace LeaveTrackerSystem.Application.Services
             _repo = repo;
         }
 
-        private readonly Dictionary<LeaveType, int> _entitlement = new()
+        private readonly Dictionary<LeaveTypeEnum, int> _entitlement = new()
         {
-            { LeaveType.Annual, 14 },
-            { LeaveType.Medical, 10 },
-            { LeaveType.Emergency, 7 }
+            { LeaveTypeEnum.Annual, 14 },
+            { LeaveTypeEnum.Medical, 10 },
+            { LeaveTypeEnum.Emergency, 5 }
         };
 
-        public int GetUsedLeaveDays(string email, LeaveType type)
+        public int GetUsedLeaveDays(string email, LeaveTypeEnum type)
         {
             var approvedRequests = _repo.GetApprovedRequestsByEmailAndType(email, type);
             
             return approvedRequests.Sum(r => (r.EndDate - r.StartDate).Days + 1);
         }
 
-        public int GetRemainingLeave(string email, LeaveType type) 
+        public int GetRemainingLeave(string email, LeaveTypeEnum type) 
         {
             var used = GetUsedLeaveDays(email, type);
 
@@ -37,18 +37,13 @@ namespace LeaveTrackerSystem.Application.Services
         {
             var summary = new Dictionary<string, (int used, int remaining)>();
 
-            foreach (LeaveType type in Enum.GetValues(typeof(LeaveType)))
+            foreach (LeaveTypeEnum type in Enum.GetValues(typeof(LeaveTypeEnum)))
             {
                 int used = 0;
 
                 if (statusFilter == null || statusFilter == LeaveStatus.Approved)
                 {
                     used = GetUsedLeaveDays(email, type);
-                }
-                else
-                {
-                    // Future extension: add support for Pending, Rejected if needed
-                    used = 0; // default to 0 if not approved
                 }
 
                 int remaining = _entitlement.TryGetValue(type, out var total) ? Math.Max(0, total - used) : 0;

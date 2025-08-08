@@ -2,7 +2,7 @@
 
 namespace LeaveTrackerSystem.Domain.Enums
 {
-    public enum LeaveType
+    public enum LeaveTypeEnum
     {
         Unknown = 0,
         [Display(Name = "Annual Leave")]

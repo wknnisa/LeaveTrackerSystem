@@ -2,10 +2,9 @@
 
 @{
     ViewData["Title"] = "Pending Leave Requests";
-
 }
 
-<h2>Pending Leave Requests</h2>
+<h2>@ViewData["Title"]</h2>
 
 <form method="get" asp-action="AllRequests" class="mb-3">
     <label for="status">Filter by Status:</label>
@@ -32,8 +31,8 @@
             @foreach (var request in Model)
             {
                 <tr>
-                    <td>@request.Email</td>
-                    <td>@request.LeaveType</td>
+                    <td>@request.User.Email</td>
+                    <td>@request.LeaveType.Name</td>
                     <td>@request.StartDate.ToShortDateString()</td>
                     <td>@request.EndDate.ToShortDateString()</td>
                     <td>@request.Reason</td>

@@ -5,6 +5,6 @@ namespace LeaveTrackerSystem.Application.Interfaces
 {
     public interface ILeaveRequestRepository
     {
-        List<LeaveRequest> GetApprovedRequestsByEmailAndType(string email, LeaveType type);
+        List<LeaveRequest> GetApprovedRequestsByEmailAndType(string email, LeaveTypeEnum type);
     }
 }

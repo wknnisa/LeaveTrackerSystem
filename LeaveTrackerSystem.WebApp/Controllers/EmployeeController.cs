@@ -1,23 +1,27 @@
 ﻿using LeaveTrackerSystem.Application.Services;
 using LeaveTrackerSystem.Domain.Entities;
 using LeaveTrackerSystem.Domain.Enums;
-using LeaveTrackerSystem.Infrastructure.Mock;
+using LeaveTrackerSystem.Infrastructure.Persistence;
 using LeaveTrackerSystem.WebApp.Models.ViewModels;
 using LeaveTrackerSystem.WebApp.Services.Pdf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using static LeaveTrackerSystem.Infrastructure.Mock.InMemoryData;
 
 namespace LeaveTrackerSystem.WebApp.Controllers
 {
     public class EmployeeController : Controller
     {
         private readonly LeaveBalanceService _leaveBalanceService;
+        private readonly LeaveTrackerDbContext _dbContext;
 
-        public EmployeeController(LeaveBalanceService leaveBalanceService)
+        public EmployeeController(
+            LeaveBalanceService leaveBalanceService,
+            LeaveTrackerDbContext dbContext)
         {
             _leaveBalanceService = leaveBalanceService;
+            _dbContext = dbContext;
         }
 
         public IActionResult Index()
@@ -49,48 +53,47 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 return View(model);
             }
 
+            var email = HttpContext.Session.GetString("Email");
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
+
+            if (user == null)
+            {
+                TempData["Error"] = "User not found.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var leaveType = _dbContext.LeaveTypes.FirstOrDefault(x => x.Id == model.LeaveTypeId);
+
+            if (leaveType == null)
+            {
+                TempData["Error"] = "Leave type not found.";
+                return RedirectToAction("Submit");
+            }
+
             var daysRequested = (model.EndDate - model.StartDate).TotalDays  + 1;
-
-            var leaveType = (LeaveType)model.LeaveTypeId;
-            var email = HttpContext.Session.GetString("Email") ?? "unknown@example.com";
-
-            if (!LeaveBalanceStore.UsedLeave.ContainsKey(email))
+            
+            if (daysRequested > leaveType.DefaultDays) 
             {
-                LeaveBalanceStore.UsedLeave[email] = new Dictionary<LeaveType, int>();
-            }
-
-            if (!LeaveBalanceStore.UsedLeave[email].ContainsKey(leaveType))
-            {
-                LeaveBalanceStore.UsedLeave[email][leaveType] = 0;
-            }
-
-            var used = LeaveBalanceStore.UsedLeave[email][leaveType];
-            var max = LeaveBalanceStore.MaxBalance.ContainsKey(leaveType)? LeaveBalanceStore.MaxBalance[leaveType]:0 ;
-
-            if (used + daysRequested > max) 
-            {
-                TempData["Error"] = "Insufficient leave balance for this leave type.";
+                TempData["Error"] = "Requested days exceed your leave entitlement.";
                 model.LeaveTypes = GetLeaveTypeOptions() ;
                 return View(model);
             }
 
-            int nextId = InMemoryData.LeaveRequests.Any() ? InMemoryData.LeaveRequests.Max(r => r.Id) + 1 : 1;
-
-            InMemoryData.LeaveRequests.Add(new LeaveRequest
+            var request = new LeaveRequest
             {
-                Id = nextId,
-                Email = email,
+                UserId = user.Id,
+                LeaveTypeId = leaveType.Id,
                 StartDate = model.StartDate,
                 EndDate = model.EndDate,
-                LeaveType = leaveType,
                 Reason = model.Reason,
-                Status = LeaveStatus.Pending
-            });
+                Status = LeaveStatus.Pending,
+                RequestedAt = DateTime.Now,
+            };
 
-            LeaveBalanceStore.UsedLeave[email][leaveType] += (int)daysRequested;
+            _dbContext.LeaveRequests.Add(request);
+            _dbContext.SaveChanges();
 
-            // TEMP: Simulating successful submission - no database logic yet
-            TempData["Success"] = "Leave request submitted successfully and marked as Pending.";
+            TempData["Success"] = "Leave request submitted successfully.";
             return RedirectToAction("Submit");
         }
 
@@ -103,36 +106,36 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var summary = new Dictionary<string, (int used, int remaining)>();
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
 
-            foreach (LeaveType type in Enum.GetValues(typeof(LeaveType)))
+            if (user == null)
             {
-                int used = _leaveBalanceService.GetUsedLeaveDays(email, type);
-
-                int remaining = _leaveBalanceService.GetRemainingLeave(email, type);
-
-                summary[type.ToString()] = (used, remaining);
+                TempData["Error"] = "User not found.";
+                return RedirectToAction("Login", "Account");
             }
 
-            var usedLeaveByType = new Dictionary<string, int>();
+            var summary = _dbContext.LeaveTypes
+                .Select(x => new
+                {
+                    TypeName = x.Name,
+                    Used = _dbContext.LeaveRequests.Count(lr => lr.UserId == user.Id && lr.LeaveTypeId == x.Id && lr.Status == LeaveStatus.Approved),
+                    Remaining = x.DefaultDays - _dbContext.LeaveRequests.Where(lr => lr.UserId == user.Id && lr.LeaveTypeId == x.Id && lr.Status == LeaveStatus.Approved)
+                                .Sum(lr => EF.Functions.DateDiffDay(lr.StartDate, lr.EndDate) + 1)
+                }).ToDictionary(k => k.TypeName, v => (v.Used, v.Remaining < 0 ? 0 : v.Remaining));
 
-            foreach (LeaveType type in Enum.GetValues(typeof(LeaveType)))
-            {
-                int used = _leaveBalanceService.GetUsedLeaveDays(email, type);
-                usedLeaveByType[type.ToString()] = used;
-            }
+            var usedLeaveByType = summary.ToDictionary(k => k.Key, v => v.Value.Used);
 
             ViewBag.PieChartData = usedLeaveByType;
-
             ViewBag.LabelsJson = JsonConvert.SerializeObject(usedLeaveByType.Keys);
             ViewBag.DataJson = JsonConvert.SerializeObject(usedLeaveByType.Values);
 
-            var monthlyUsage = InMemoryData.LeaveRequests
-                .Where(r => r.Email == email && r.Status == LeaveStatus.Approved)
-                .GroupBy(r => new { r.StartDate.Year, r.StartDate.Month })
-                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+            var monthlyUsage = _dbContext.LeaveRequests
+                .Where(r => r.UserId == user.Id && r.Status == LeaveStatus.Approved)
+                .GroupBy(r => new DateTime(r.StartDate.Year, r.StartDate.Month, 1))
+                .AsEnumerable()
+                .OrderBy(g => g.Key)
                 .ToDictionary(
-                    g => $"{g.Key.Month:00}/{g.Key.Year}",
+                    g => g.Key.ToString("MM/yyyy"),
                     g => g.Count()
                 );
 
@@ -144,25 +147,39 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
         private List<SelectListItem> GetLeaveTypeOptions()
         {
-            return Enum.GetValues(typeof(LeaveType)).Cast<LeaveType>().Where(e => e != LeaveType.Unknown)
+            return _dbContext.LeaveTypes
             .Select(e => new SelectListItem
             {
-                Text = e.ToString(),
-                Value = ((int)e).ToString()
+                Text = e.Name,
+                Value = e.Id.ToString()
             }).ToList();
         }
 
         public IActionResult MyRequests(string? status)
         { 
             var email = HttpContext.Session.GetString("Email");
-            var myRequests = InMemoryData.LeaveRequests.Where(r => r.Email == email).ToList();
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
+
+            if (user == null)
+            {
+                TempData["Error"] = "User not found.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var myRequestsQuery = _dbContext.LeaveRequests.Include(r => r.LeaveType).Where(r => r.UserId == user.Id).AsQueryable();
 
             if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeaveStatus>(status, out var parsed))
             {
-                myRequests = myRequests.Where(r => r.Status == parsed).ToList();
+                myRequestsQuery = myRequestsQuery.Where(r => r.Status == parsed);
             }
 
-            myRequests = myRequests.OrderBy(r => (int)r.Status).ToList();
+            var myRequests = myRequestsQuery.OrderBy(r => (int)r.Status).ToList();
 
             ViewBag.statusOptions = new List<SelectListItem>
             {
