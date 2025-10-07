@@ -1,37 +1,41 @@
-﻿using LeaveTrackerSystem.Infrastructure.Persistence;
+﻿using LeaveTrackerSystem.Application.Services;
+using LeaveTrackerSystem.WebApp.Filters;
+using LeaveTrackerSystem.WebApp.Helpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace LeaveTrackerSystem.WebApp.Controllers
 {
+    [AuthorizeSession(Role = "Admin")]
     public class AdminController : Controller
     {
-        private readonly LeaveTrackerDbContext _dbContext;
+        private readonly AdminService _adminService;
         public AdminController(
-            LeaveTrackerDbContext dbContext) 
+            AdminService adminService) 
         { 
-            _dbContext = dbContext;
+            _adminService = adminService;
         }
 
         public IActionResult Index()
         {
-            if (HttpContext.Session.GetString("Role") != "Admin")
-            { 
-                return RedirectToAction("Login", "Account");
-            }
             return View();
         }
 
         public IActionResult AllRequests()
         {
-            var role = HttpContext.Session.GetString("Role");
-
-            if (role != "Admin")
+            if (!SessionHelper.IsSessionActive(HttpContext))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var allRequests = _dbContext.LeaveRequests.Include(r => r.User).Include(r => r.LeaveType).ToList();
+            var role = SessionHelper.GetUserRole(HttpContext);
+
+            if (role != "Admin")
+            {
+                TempData["Error"] = "Unauthorized access.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var allRequests = _adminService.GetAllRequests();
 
             return View(allRequests);
         }

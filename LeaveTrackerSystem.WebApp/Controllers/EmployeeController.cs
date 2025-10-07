@@ -1,44 +1,48 @@
-﻿using LeaveTrackerSystem.Application.Services;
-using LeaveTrackerSystem.Domain.Entities;
-using LeaveTrackerSystem.Domain.Enums;
-using LeaveTrackerSystem.Infrastructure.Persistence;
+﻿using LeaveTrackerSystem.Application.DTOs;
+using LeaveTrackerSystem.Application.Interfaces;
+using LeaveTrackerSystem.WebApp.Filters;
+using LeaveTrackerSystem.WebApp.Helpers;
 using LeaveTrackerSystem.WebApp.Models.ViewModels;
 using LeaveTrackerSystem.WebApp.Services.Pdf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace LeaveTrackerSystem.WebApp.Controllers
 {
+    [AuthorizeSession(Role = "Employee")]
     public class EmployeeController : Controller
     {
-        private readonly LeaveBalanceService _leaveBalanceService;
-        private readonly LeaveTrackerDbContext _dbContext;
+        private readonly IEmployeeService _employeeService;
 
         public EmployeeController(
-            LeaveBalanceService leaveBalanceService,
-            LeaveTrackerDbContext dbContext)
+            IEmployeeService employeeService)
         {
-            _leaveBalanceService = leaveBalanceService;
-            _dbContext = dbContext;
+            _employeeService = employeeService;
         }
 
         public IActionResult Index()
         {
-            if (HttpContext.Session.GetString("Role") != "Employee")
-            {
-                return RedirectToAction("Login", "Account");
-            }
             return View();
         }
 
         [HttpGet]
         public IActionResult Submit()
         {
+            if (!SessionHelper.IsSessionActive(HttpContext))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var types = _employeeService.GetLeaveTypes();
+
             var model = new LeaveRequestViewModel
             {
-                LeaveTypes = GetLeaveTypeOptions()
+                LeaveTypes = types.Select(t => new SelectListItem 
+                { 
+                    Text = t.Name,
+                    Value = t.Id.ToString()
+                }).ToList()
             };
 
             return View(model);
@@ -47,139 +51,50 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         [HttpPost]
         public IActionResult Submit(LeaveRequestViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (!SessionHelper.IsSessionActive(HttpContext))
             {
-                model.LeaveTypes = GetLeaveTypeOptions();
-                return View(model);
-            }
-
-            var email = HttpContext.Session.GetString("Email");
-            var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
-
-            if (user == null)
-            {
-                TempData["Error"] = "User not found.";
                 return RedirectToAction("Login", "Account");
             }
 
-            var leaveType = _dbContext.LeaveTypes.FirstOrDefault(x => x.Id == model.LeaveTypeId);
-
-            if (leaveType == null)
+            if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Leave type not found.";
-                return RedirectToAction("Submit");
-            }
+                var types = _employeeService.GetLeaveTypes();
 
-            var daysRequested = (model.EndDate - model.StartDate).TotalDays  + 1;
-            
-            if (daysRequested > leaveType.DefaultDays) 
-            {
-                TempData["Error"] = "Requested days exceed your leave entitlement.";
-                model.LeaveTypes = GetLeaveTypeOptions() ;
+                model.LeaveTypes = types.Select(t => new SelectListItem
+                    {
+                        Text = t.Name,
+                        Value = t.Id.ToString()
+                    }).ToList();
+
                 return View(model);
             }
 
-            var request = new LeaveRequest
+            var email = SessionHelper.GetUserEmail(HttpContext)!;
+
+            var dto = new LeaveRequestDto
             {
-                UserId = user.Id,
-                LeaveTypeId = leaveType.Id,
+                LeaveTypeId = model.LeaveTypeId,
                 StartDate = model.StartDate,
                 EndDate = model.EndDate,
-                Reason = model.Reason,
-                Status = LeaveStatus.Pending,
-                RequestedAt = DateTime.Now,
+                Reason = model.Reason
             };
 
-            _dbContext.LeaveRequests.Add(request);
-            _dbContext.SaveChanges();
+            var (success, message) = _employeeService.SubmitLeaveRequest(email, dto);
 
-            TempData["Success"] = "Leave request submitted successfully.";
+            TempData[success ? "Success" : "Error"] = message;
             return RedirectToAction("Submit");
         }
 
-        public IActionResult LeaveSummary()
-        {
-            var email = HttpContext.Session.GetString("Email");
-
-            if (string.IsNullOrEmpty(email))
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
-
-            if (user == null)
-            {
-                TempData["Error"] = "User not found.";
-                return RedirectToAction("Login", "Account");
-            }
-
-            var summary = _dbContext.LeaveTypes
-                .Select(x => new
-                {
-                    TypeName = x.Name,
-                    Used = _dbContext.LeaveRequests.Count(lr => lr.UserId == user.Id && lr.LeaveTypeId == x.Id && lr.Status == LeaveStatus.Approved),
-                    Remaining = x.DefaultDays - _dbContext.LeaveRequests.Where(lr => lr.UserId == user.Id && lr.LeaveTypeId == x.Id && lr.Status == LeaveStatus.Approved)
-                                .Sum(lr => EF.Functions.DateDiffDay(lr.StartDate, lr.EndDate) + 1)
-                }).ToDictionary(k => k.TypeName, v => (v.Used, v.Remaining < 0 ? 0 : v.Remaining));
-
-            var usedLeaveByType = summary.ToDictionary(k => k.Key, v => v.Value.Used);
-
-            ViewBag.PieChartData = usedLeaveByType;
-            ViewBag.LabelsJson = JsonConvert.SerializeObject(usedLeaveByType.Keys);
-            ViewBag.DataJson = JsonConvert.SerializeObject(usedLeaveByType.Values);
-
-            var monthlyUsage = _dbContext.LeaveRequests
-                .Where(r => r.UserId == user.Id && r.Status == LeaveStatus.Approved)
-                .GroupBy(r => new DateTime(r.StartDate.Year, r.StartDate.Month, 1))
-                .AsEnumerable()
-                .OrderBy(g => g.Key)
-                .ToDictionary(
-                    g => g.Key.ToString("MM/yyyy"),
-                    g => g.Count()
-                );
-
-            ViewBag.BarLabelsJson = JsonConvert.SerializeObject(monthlyUsage.Keys);
-            ViewBag.BarDataJson = JsonConvert.SerializeObject(monthlyUsage.Values);
-
-            return View(summary);
-        }
-
-        private List<SelectListItem> GetLeaveTypeOptions()
-        {
-            return _dbContext.LeaveTypes
-            .Select(e => new SelectListItem
-            {
-                Text = e.Name,
-                Value = e.Id.ToString()
-            }).ToList();
-        }
-
         public IActionResult MyRequests(string? status)
-        { 
-            var email = HttpContext.Session.GetString("Email");
-
-            if (string.IsNullOrEmpty(email))
+        {
+            if (!SessionHelper.IsSessionActive(HttpContext))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
+            var email = SessionHelper.GetUserEmail(HttpContext)!;
 
-            if (user == null)
-            {
-                TempData["Error"] = "User not found.";
-                return RedirectToAction("Login", "Account");
-            }
-
-            var myRequestsQuery = _dbContext.LeaveRequests.Include(r => r.LeaveType).Where(r => r.UserId == user.Id).AsQueryable();
-
-            if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeaveStatus>(status, out var parsed))
-            {
-                myRequestsQuery = myRequestsQuery.Where(r => r.Status == parsed);
-            }
-
-            var myRequests = myRequestsQuery.OrderBy(r => (int)r.Status).ToList();
+            var requests = _employeeService.GetMyRequests(email, status);
 
             ViewBag.statusOptions = new List<SelectListItem>
             {
@@ -189,26 +104,40 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 new SelectListItem { Text = "Rejected", Value = "Rejected", Selected = status == "Rejected" }
             };
 
-            return View(myRequests);
+            return View(requests);
         }
 
-        public IActionResult ExportSummary(string? status = null)
+        public IActionResult LeaveSummary()
         {
-            var email = HttpContext.Session.GetString("Email") ?? "unknown@example.com";
-
-            if (string.IsNullOrEmpty(email))
+            if (!SessionHelper.IsSessionActive(HttpContext))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            LeaveStatus? statusFilter = null;
+            var email = SessionHelper.GetUserEmail(HttpContext)!;
 
-            if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeaveStatus>(status, true, out var parsedStatus))
+            var summary = _employeeService.GetLeaveSummary(email);
+            var usedLeaveByType = summary.ToDictionary(k => k.Key, v => v.Value.Used);
+            var monthlyUsage = _employeeService.GetMonthlyUsage(email);
+
+            ViewBag.LabelsJson = JsonConvert.SerializeObject(usedLeaveByType.Keys);
+            ViewBag.DataJson = JsonConvert.SerializeObject(usedLeaveByType.Values);
+            ViewBag.BarLabelsJson = JsonConvert.SerializeObject(monthlyUsage.Keys);
+            ViewBag.BarDataJson = JsonConvert.SerializeObject(monthlyUsage.Values);
+
+            return View(summary);
+        }
+
+        public IActionResult ExportSummary(string? status = null)
+        {
+            if (!SessionHelper.IsSessionActive(HttpContext))
             {
-                statusFilter = parsedStatus;
+                return RedirectToAction("Login", "Account");
             }
 
-            var summary = _leaveBalanceService.GetLeaveSummary(email, statusFilter);
+            var email = SessionHelper.GetUserEmail(HttpContext)!;
+
+            var summary = _employeeService.GetLeaveSummary(email);
             var pdfBytes = new LeavePdfService().GenerateLeaveRequestPdf(summary);
 
             return File(pdfBytes, "application/pdf", "LeaveSummary.pdf");

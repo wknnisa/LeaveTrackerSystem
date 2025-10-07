@@ -1,61 +1,38 @@
-﻿using LeaveTrackerSystem.Domain.Enums;
-using LeaveTrackerSystem.Infrastructure.Persistence;
+﻿using LeaveTrackerSystem.Application.Services;
+using LeaveTrackerSystem.Domain.Enums;
+using LeaveTrackerSystem.WebApp.Filters;
+using LeaveTrackerSystem.WebApp.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace LeaveTrackerSystem.WebApp.Controllers
 {
+    [AuthorizeSession(Role = "Manager")]
     public class ManagerController : Controller
     {
-        private readonly LeaveTrackerDbContext _dbContext;
+        private readonly ManagerService _managerService;
 
         public ManagerController(
-            LeaveTrackerDbContext dbContext)
+            ManagerService managerService)
         {
-            _dbContext = dbContext;
+            _managerService = managerService;
         }
 
         public IActionResult Index()
         {
-            if (HttpContext.Session.GetString("Role") != "Manager")
-            {
-                return RedirectToAction("Login", "Account");
-            }
             return View();
         }
 
         public IActionResult AllRequests(string? status)
         {
-            var role = HttpContext.Session.GetString("Role");
-            var email = HttpContext.Session.GetString("Email");
-
-            if (string.IsNullOrEmpty(role) || string.IsNullOrEmpty(email))
+            if (!SessionHelper.IsSessionActive(HttpContext))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var currentUser = _dbContext.Users.FirstOrDefault(u => u.Email == email);
+            var email = SessionHelper.GetUserEmail(HttpContext)!;
 
-            if (currentUser == null)
-            {
-                TempData["Error"] = "User not found.";
-                return RedirectToAction("Login", "Account");
-            }
-
-            var requestsQuery = _dbContext.LeaveRequests.Include(r => r.LeaveType).Include(r => r.User).AsQueryable();
-
-            if (role == "Manager")
-            {
-                requestsQuery = requestsQuery.Where(r => r.UserId != currentUser.Id);
-            }
-
-            if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeaveStatus>(status, out var parsed))
-            {
-                requestsQuery = requestsQuery.Where(r => r.Status == parsed);
-            }
-
-            var requests = requestsQuery.OrderBy(r => (int)r.Status).ToList();
+            var requests = _managerService.GetAllRequestsForManager(email, status);
 
             ViewBag.statusOptions = new List<SelectListItem>
             {
@@ -71,28 +48,14 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         [HttpPost]
         public IActionResult Approve(int id)
         {
-            var request = _dbContext.LeaveRequests.FirstOrDefault(r => r.Id == id);
-
-            if (request != null && request.Status == LeaveStatus.Pending)
-            {
-                request.Status = LeaveStatus.Approved;
-                _dbContext.SaveChanges();
-            }
-
+            _managerService.UpdateLeaveStatus(id, LeaveStatus.Approved);
             return RedirectToAction("AllRequests");
         }
 
         [HttpPost]
         public IActionResult Reject(int id)
         {
-            var request = _dbContext.LeaveRequests.FirstOrDefault(r => r.Id == id);
-
-            if (request != null && request.Status == LeaveStatus.Pending)
-            {
-                request.Status = LeaveStatus.Rejected;
-                _dbContext.SaveChanges();
-            }
-
+            _managerService.UpdateLeaveStatus(id, LeaveStatus.Rejected);
             return RedirectToAction("AllRequests");
         }
     }

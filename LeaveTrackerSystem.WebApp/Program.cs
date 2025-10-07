@@ -14,7 +14,11 @@ builder.Services.AddControllersWithViews();
 
 // Register services and repositories
 builder.Services.AddScoped<ILeaveRequestRepository, EfLeaveRequestRepository>();
-builder.Services.AddScoped<LeaveBalanceService>();
+builder.Services.AddScoped<ILeaveTypeRepository, EfLeaveTypeRepository>();
+builder.Services.AddScoped<IUserRepository, EfUserRepository>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<ManagerService>();
+builder.Services.AddScoped<AdminService>();
 
 // Add session services with configuration
 builder.Services.AddSession(options =>
