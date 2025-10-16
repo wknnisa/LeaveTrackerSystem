@@ -20,3 +20,64 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+@media (max-width: 576px) {
+    .d-flex.align-items-center.mb-4 {
+        flex-wrap: wrap !important;
+        text-align: center;
+        justify-content: center !important;
+    }
+
+        .d-flex.align-items-center.mb-4 img {
+            margin-bottom: 0.5rem;
+            height: 45px !important;
+        }
+
+        .d-flex.align-items-center.mb-4 h1 {
+            font-size: 1.25rem;
+        }
+
+        .d-flex.align-items-center.mb-4 small {
+            font-size: 0.8rem;
+            display: block;
+        }
+}
+
+@media (max-width: 820px) and (min-width: 577px) {
+    .d-flex.align-items-center.mb-4 {
+        flex-wrap: wrap;
+        justify-content: center !important;
+        text-align: center;
+    }
+
+        .d-flex.align-items-center.mb-4 img {
+            height: 55px;
+            margin-bottom: 0.25rem;
+        }
+
+        .d-flex.align-items-center.mb-4 h1 {
+            font-size: 1.4rem;
+        }
+
+        .d-flex.align-items-center.mb-4 small {
+            font-size: 0.9rem;
+            display: block;
+        }
+
+    .chart-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .btn {
+        font-size: 0.95rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .d-flex.justify-content-between.align-items-center.mb-3 {
+        flex-wrap: wrap;
+        justify-content: center !important;
+        text-align: center;
+        gap: 0.5rem;
+    }
+}

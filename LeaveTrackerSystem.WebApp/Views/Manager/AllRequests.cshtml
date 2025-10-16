@@ -4,60 +4,72 @@
     ViewData["Title"] = "Pending Leave Requests";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container mt-4 mb-5">
+    <h3 class="fw-bold text-primary mb-4">@ViewData["Title"]</h3>
 
-<form method="get" asp-action="AllRequests" class="mb-3">
-    <label for="status">Filter by Status:</label>
-    @Html.DropDownList("status", (List<SelectListItem>)ViewBag.StatusOptions, new {
-    @class = "form-select w-auto d-inline-block", onchange = "this.form.submit();"
-    })
-</form>
+    <form method="get" asp-action="AllRequests" class="mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <label for="status" class="form-label mb-0 fw-semibold">Filter by Status:</label>
+            @Html.DropDownList("status", (List<SelectListItem>)ViewBag.StatusOptions, new {
+            @class = "form-select w-auto d-inline-block", onchange = "this.form.submit();"
+                        })
+        </div>
+    </form>
 
-@if (Model.Any())
-{
-    <table class="table table-bordered table-hover align-middle">
-        <thead class="table-dark text-center">
-            <tr>
-                <th>Email</th>
-                <th>Leave Type</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Reason</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var request in Model)
-            {
-                <tr>
-                    <td>@request.User.Email</td>
-                    <td>@request.LeaveType.Name</td>
-                    <td>@request.StartDate.ToShortDateString()</td>
-                    <td>@request.EndDate.ToShortDateString()</td>
-                    <td>@request.Reason</td>
-                    <td>@request.Status</td>
-                    <td class="text-center">
-                        @if (request.Status == LeaveStatus.Pending)
-                        {
-                            <form method="post" asp-action="Approve" asp-route-id="@request.Id" style="display:inline;">
-                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                            </form>
-                            <form method="post" asp-action="Reject" asp-route-id="@request.Id" style="display:inline;">
-                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <span class="text-muted">-</span>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <div class="alert alert-info">No leave requests found.</div>
-}
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Email</th>
+                        <th>Leave Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model)
+                    {
+                        <tr>
+                            <td>@request.User.Email</td>
+                            <td>@(request.LeaveType.Name ?? "Other")</td>
+                            <td>@request.StartDate.ToShortDateString()</td>
+                            <td>@request.EndDate.ToShortDateString()</td>
+                            <td>@request.Reason</td>
+                            <td>
+                                <span class="badge @(request.Status == LeaveStatus.Approved ? "bg-success" : request.Status == LeaveStatus.Rejected ? "bg-danger" : "bg-warning text-dark")">
+                                    @request.Status
+                                </span>
+                            </td>
+                            <td>
+                                @if (request.Status == LeaveStatus.Pending)
+                                {
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <form method="post" asp-action="Approve" asp-route-id="@request.Id">
+                                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                        </form>
+                                        <form method="post" asp-action="Reject" asp-route-id="@request.Id">
+                                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center mt-4">No leave requests found.</div>
+    }
+</div>

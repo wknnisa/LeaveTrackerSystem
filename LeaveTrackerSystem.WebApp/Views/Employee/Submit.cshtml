@@ -2,46 +2,54 @@
 
 @{
     ViewData["Title"] = "Submit Leave Request";
-}
+}<div class="container mt-4 mb-5">
+    <h3 class="fw-bold text-primary mb-4">Submit Leave Request</h3>
 
-<h2>Submit Leave Request</h2>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
 
-@if (TempData["Error"] != null )
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+    <form asp-action="Submit" method="post" class="needs-validation" novalidate>
+        <div class="form-group mb-3">
+            <label asp-for="StartDate" class="form-label fw-semibold"> 
+                Start Date <span class="text-danger">*</span>
+            </label>
+            <input asp-for="StartDate" class="form-control" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+        <div class="form-group mb-3">
+            <label asp-for="EndDate" class="form-label fw-semibold">
+                End Date <span class="text-danger">*</span>
+            </label>
+            <input asp-for="EndDate" class="form-control" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+        <div class="form-group mb-3">
+            <label asp-for="LeaveTypeId" class="form-label fw-semibold">
+                Leave Type <span class="text-danger">*</span>
+            </label>
+            <select asp-for="LeaveTypeId" asp-items="Model.LeaveTypes" class="form-select">
+                <option value="">-- Select --</option>
+            </select>
+            <span asp-validation-for="LeaveTypeId" class="text-danger"></span>
+        </div>
+        <div class="form-group mb-3">
+            <label asp-for="Reason" class="form-label fw-semibold">
+                Reason <span class="text-danger">*</span>
+            </label>
+            <textarea asp-for="Reason" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Reason" class="text-danger"></span>
+        </div>
 
-<form asp-action="Submit" method="post">
-    <div class="form-group">
-        <label asp-for="StartDate"></label>
-        <input asp-for="StartDate" class="form-control" />
-        <span asp-validation-for="StartDate" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="EndDate"></label>
-        <input asp-for="EndDate" class="form-control" />
-        <span asp-validation-for="EndDate" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="LeaveTypeId"></label>
-        <select asp-for="LeaveTypeId" asp-items="Model.LeaveTypes" class="form-control">
-            <option value="">-- Select --</option>
-        </select>
-        <span asp-validation-for="LeaveTypeId" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Reason"></label>
-        <textarea asp-for="Reason" class="form-control"></textarea>
-        <span asp-validation-for="Reason" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary mt-2">Submit</button>
-</form>
+        <button type="submit" class="btn btn-primary mt-2">Submit</button>
+    </form>
+</div>
 
 @section Scripts
 {

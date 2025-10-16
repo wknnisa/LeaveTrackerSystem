@@ -4,37 +4,45 @@
     ViewData["Title"] = "All Leave Requests";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container mt-4 mb-5">
+    <h3 class="fw-bold text-primary mb-4">@ViewData["Title"]</h3>
 
-@if (Model.Any())
-{
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark text-center">
-            <tr>
-                <th>Email</th>
-                <th>Leave Type</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Reason</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var request in Model)
-            {
-                <tr>
-                    <td>@request.User.Email</td>
-                    <td>@request.LeaveType.Name</td>
-                    <td>@request.StartDate.ToShortDateString()</td>
-                    <td>@request.EndDate.ToShortDateString()</td>
-                    <td>@request.Reason</td>
-                    <td>@request.Status</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <div class="alert alert-info">No leave requests found.</div>
-}
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Email</th>
+                        <th>Leave Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model)
+                    {
+                        <tr>
+                            <td>@request.User?.Email</td>
+                            <td>@(request.LeaveType?.Name ?? "Other")</td>
+                            <td>@request.StartDate.ToShortDateString()</td>
+                            <td>@request.EndDate.ToShortDateString()</td>
+                            <td>@request.Reason</td>
+                            <td>
+                                <span class="badge @(request.Status == LeaveStatus.Approved ? "bg-success" : request.Status == LeaveStatus.Rejected ? "bg-danger" : "bg-warning text-dark")">
+                                    @request.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center mt-4">No leave requests found.</div>
+    }
+</div>

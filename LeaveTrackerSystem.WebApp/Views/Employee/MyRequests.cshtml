@@ -3,43 +3,52 @@
 @{
     ViewData["Title"] = "My Leave Requests";
 }
+<div class="container mt-4 mb-5">
+    <h3 class="fw-bold text-primary mb-4">My Leave Requests</h3>
 
-<h2>My Leave Requests</h2>
+    <form method="get" asp-action="MyRequests" class="mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <label for="status" class="form-label mb-0 fw-semibold">Filter by Status:</label>
+            @Html.DropDownList("status", (List<SelectListItem>)ViewBag.StatusOptions, new {
+            @class = "form-select w-auto", onchange = "this.form.submit();"
+            })
+        </div>
+    </form>
 
-<form method="get" asp-action="MyRequests" class="mb-3">
-    <label for="status">Filter by Status:</label>
-    @Html.DropDownList("status", (List<SelectListItem>)ViewBag.StatusOptions, new {
-    @class = "form-select w-auto d-inline-block", onchange = "this.form.submit();"
-    })
-</form>
-
-@if (Model.Any())
-{
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Leave Type</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Reason</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var request in Model)
-            {
-                <tr>
-                    <td>@request.LeaveType?.Name</td>
-                    <td>@request.StartDate.ToShortDateString()</td>
-                    <td>@request.EndDate.ToShortDateString()</td>
-                    <td>@request.Reason</td>
-                    <td>@request.Status</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <div class="alert alert-info">No leave requests found.</div>
-}
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Leave Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model)
+                    {
+                        <tr>
+                            <td>@(request.LeaveType?.Name ?? "Other")</td>
+                            <td>@request.StartDate.ToShortDateString()</td>
+                            <td>@request.EndDate.ToShortDateString()</td>
+                            <td>@request.Reason</td>
+                            <td>
+                                <span class="badge @(request.Status == LeaveStatus.Approved ? "bg-success" : request.Status == LeaveStatus.Rejected ? "bg-danger" : "bg-warning text-dark")">
+                                    @request.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center mt-4">No leave requests found.</div>
+    }
+</div>

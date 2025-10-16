@@ -4,6 +4,22 @@
     ViewData["Title"] = "Leave Summary";
 }
 
+<style>
+    .chart-container {
+        width: 100%;
+        margin: 0 auto;
+        max-width: 700px;
+    }
+
+    .chart-placeholder {
+        display: block;
+        width: 100%;
+        margin: 0 auto;
+        padding: 15px 0;
+        min-height: 60px;
+    }
+</style>
+
 <div class="d-flex align-items-center mb-4">
     <img src="~/img/LeaveTrackerLogo.png" alt="LogoIpsum Company Logo" class="img-fluid me-3" style="height: 60px;">
     <div>
@@ -23,7 +39,7 @@
         </div>
     </div>
 
-    <table class="table table table-striped">
+    <table class="table table-striped">
         <thead class="table-dark text-center">
             <tr>
                 <th>Leave Type</th>
@@ -32,27 +48,60 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model)
+            @if (Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Key</td>
+                        <td class="text-center">@item.Value.used</td>
+                        <td class="text-center">@item.Value.remaining</td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-                    <td>@item.Key</td>
-                    <td class="text-center">@item.Value.used</td>
-                    <td class="text-center">@item.Value.remaining</td>
+                    <td colspan="3" class="text-center text-muted">No leave date available.</td>
                 </tr>
             }
         </tbody>
     </table>
 
+    @{
+        bool hasPieData = ViewBag.LabelsJson?.ToString() != "[]" && ViewBag.DataJson.ToString() != "[]";
+        bool hasBarData = ViewBag.BarLabelsJson.ToString() != "[]" && ViewBag.BarDataJson.ToString() != "[]";
+    }
+
     <h3>Leave Usage Breakdown</h3>
-    <div class="chart-container mb-4" style="max-width: 700px; margin: 0 auto;">
-        <canvas id="leavePieChart" height="400"></canvas>
+    <div id="pieContainer" class="chart-container">
+        @if (hasPieData)
+        {
+            <canvas id="leavePieChart" height="300"></canvas>
+        }
+        else
+        {
+            <div class="alert alert-info text-center chart-placeholder">
+                No data to display for Pie Chart.
+            </div>
+        }
     </div>
 
     <h3>Leave Requests Per Month</h3>
-    <div class="chart-container" style="max-width: 700px; margin: 0 auto;">
-        <canvas id="leaveBarChart" height="300"></canvas>
+    <div id="barContainer" class="chart-container">
+        @if (hasBarData)
+        {
+            <canvas id="leaveBarChart" height="300"></canvas>
+        }
+        else
+        {
+            <div class="alert alert-info text-center chart-placeholder">
+                No data to display for Bar Chart.
+            </div>
+        }
     </div>
-    
+
+
 </div>
 
 @section Scripts {
@@ -60,64 +109,87 @@
         const labels = JSON.parse('@Html.Raw(ViewBag.LabelsJson ?? "[]")');
         const data = JSON.parse('@Html.Raw(ViewBag.DataJson ?? "[]")');
 
-        const ctx = document.getElementById('leavePieChart').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Leave Used',
-                    data: data,
-                    backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Leave Usage Breakdown'
+        let total = 0;
+        for (let i = 0; i < data.length; i++) {
+            total += data[i];
+        }
+
+        if (labels.length === 0 || data.length === 0 || total === 0)
+        {
+            document.getElementById("pieContainer").innerHTML = "<div class='alert alert-info text-center chart-placeholder'>No data to display.</div>";
+        }
+        else
+        {
+            const ctx = document.getElementById('leavePieChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Leave Used',
+                        data: data,
+                        backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Leave Usage Breakdown'
+                        }
                     }
                 }
-            }
-        })
-    </script>
+            });
+        }
 
-    <script>
         const barLabels = JSON.parse('@Html.Raw(ViewBag.BarLabelsJson ?? "[]")');
         const barData = JSON.parse('@Html.Raw(ViewBag.BarDataJson ?? "[]")');
 
-        const barCtx = document.getElementById('leaveBarChart').getContext('2d');
-        const barChart = new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: barLabels,
-                datasets: [{
-                    label: 'Approved Leave Requests',
-                    data: barData,
-                    backgroundColor: '#36A2EB'
-                }]
-            },
-           options: {
-               responsive: true,
-               plugins: {
-                    legend: { display: false },
-                    title: {
-                        display: true,
-                        text: 'Monthly Leave Usage'
-                    }
-               },
-               scales: {
-                   y: {
-                       beginAtZero: true,
-                       precision: 0
+        let barTotal = 0;
+
+        for (let i = 0; i < barData.length; i++) {
+            barTotal += barData[i];
+        }
+
+        if (barLabels.length === 0 || barData.length === 0 || barTotal === 0)
+        {
+            document.getElementById("barContainer").innerHTML = "<div class='alert alert-info text-center chart-placeholder'>No data to display.</div>";
+        }
+        else
+        {
+            const barCtx = document.getElementById('leaveBarChart').getContext('2d');
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [{
+                        label: 'Approved Leave Requests',
+                        data: barData,
+                        backgroundColor: '#36A2EB'
+                    }]
+                },
+               options: {
+                   responsive: true,
+                   plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Monthly Leave Usage'
+                        }
+                   },
+                   scales: {
+                       y: {
+                           beginAtZero: true,
+                           precision: 0
+                       }
                    }
                }
-           }
-        });
+            });
+        }
     </script>
 }
