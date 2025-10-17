@@ -24,9 +24,14 @@ namespace LeaveTrackerSystem.WebApp.Validation
 
             var comparisonValue = (DateTime?)property.GetValue(validationContext.ObjectInstance);
 
-            if (currentValue.HasValue && comparisonValue.HasValue && currentValue < comparisonValue)
+            if (!currentValue.HasValue || !comparisonValue.HasValue)
             {
-                return new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} must be after {_comparisonProperty}.");
+                return ValidationResult.Success;
+            }
+
+            if (currentValue.Value < comparisonValue.Value)
+            {
+                return new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} must be on or after {_comparisonProperty}.");
             }
 
             return ValidationResult.Success;

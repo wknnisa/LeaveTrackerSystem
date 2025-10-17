@@ -24,7 +24,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
             var role = SessionHelper.GetUserRole(HttpContext);

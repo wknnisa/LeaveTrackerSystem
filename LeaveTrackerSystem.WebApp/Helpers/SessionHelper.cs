@@ -19,11 +19,17 @@ namespace LeaveTrackerSystem.WebApp.Helpers
                 return false;
             }
 
-            var session = sessionFeature.Session;
+            var hasAnyKey = context.Session.Keys.Any();
+
+            if (!hasAnyKey)
+            {
+                return false;
+            }
+
             var email = GetUserEmail(context);
             var role = GetUserRole(context);
 
-            return !string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(role);
+            return !(string.IsNullOrWhiteSpace(email) && !string.IsNullOrWhiteSpace(role));
         }
     }
 }

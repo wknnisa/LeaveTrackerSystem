@@ -31,7 +31,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
             var types = _employeeService.GetLeaveTypes();
@@ -53,7 +53,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
             if (!ModelState.IsValid)
@@ -74,22 +74,22 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             var dto = new LeaveRequestDto
             {
                 LeaveTypeId = model.LeaveTypeId,
-                StartDate = model.StartDate,
-                EndDate = model.EndDate,
+                StartDate = model.StartDate ?? DateTime.UtcNow,
+                EndDate = model.EndDate ?? DateTime.UtcNow,
                 Reason = model.Reason
             };
 
             var (success, message) = _employeeService.SubmitLeaveRequest(email, dto);
 
             TempData[success ? "Success" : "Error"] = message;
-            return RedirectToAction("Submit");
+            return RedirectToAction("MyRequests");
         }
 
         public IActionResult MyRequests(string? status)
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
             var email = SessionHelper.GetUserEmail(HttpContext)!;
@@ -111,7 +111,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
             var email = SessionHelper.GetUserEmail(HttpContext)!;
@@ -132,7 +132,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
             var email = SessionHelper.GetUserEmail(HttpContext)!;

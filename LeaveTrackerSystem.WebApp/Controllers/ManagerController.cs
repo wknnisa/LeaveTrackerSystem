@@ -27,7 +27,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
             var email = SessionHelper.GetUserEmail(HttpContext)!;
@@ -49,6 +49,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         public IActionResult Approve(int id)
         {
             _managerService.UpdateLeaveStatus(id, LeaveStatus.Approved);
+            TempData["Success"] = "Leave request approved successfully.";
             return RedirectToAction("AllRequests");
         }
 
@@ -56,6 +57,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         public IActionResult Reject(int id)
         {
             _managerService.UpdateLeaveStatus(id, LeaveStatus.Rejected);
+            TempData["Info"] = "Leave request rejected.";
             return RedirectToAction("AllRequests");
         }
     }

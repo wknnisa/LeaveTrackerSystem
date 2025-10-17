@@ -6,14 +6,14 @@ namespace LeaveTrackerSystem.WebApp.Models.ViewModels
 {
     public class LeaveRequestViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Start date is required.")]
         [DataType(DataType.Date)]
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "End date is required.")]
         [DataType(DataType.Date)]
         [DateGreaterThan("StartDate", ErrorMessage = "End Date must be on or after Start Date.")]
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
         [Required]
         [Display(Name = "Leave Type")]
