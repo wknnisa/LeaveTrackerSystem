@@ -1,5 +1,6 @@
 ﻿using LeaveTrackerSystem.Application.DTOs;
 using LeaveTrackerSystem.Application.Interfaces;
+using LeaveTrackerSystem.Domain.Enums;
 using LeaveTrackerSystem.WebApp.Filters;
 using LeaveTrackerSystem.WebApp.Helpers;
 using LeaveTrackerSystem.WebApp.Models.ViewModels;
@@ -23,6 +24,35 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
         public IActionResult Index()
         {
+            if (!SessionHelper.IsSessionActive(HttpContext))
+            {
+                return RedirectToAction("Login", "Account", new { msg = "expired" });
+            }
+
+            var email = SessionHelper.GetUserEmail(HttpContext)!;
+            var summary = _employeeService.GetLeaveSummary(email);
+            var requests = _employeeService.GetMyRequests(email, null).ToList();
+
+            var total = requests.Count;
+            var approved = requests.Count(r => r.Status == LeaveStatus.Approved);
+            var pending = requests.Count(r => r.Status == LeaveStatus.Pending);
+            var rejected = requests.Count(r => r.Status == LeaveStatus.Rejected);
+
+            var totalLeave = summary.Values.Sum(v => v.Remaining + v.Used);
+            var usedLeave = summary.Values.Sum(v => v.Used);
+            var remainingLeave = totalLeave - usedLeave;
+
+            var usedLeaveByType = summary.ToDictionary(k => k.Key, v => v.Value.Used);
+            ViewBag.LabelsJson = JsonConvert.SerializeObject(usedLeaveByType.Keys);
+            ViewBag.DataJson = JsonConvert.SerializeObject(usedLeaveByType.Values);
+
+            ViewBag.TotalRequests = total;
+            ViewBag.Approved = approved;
+            ViewBag.Pending = pending;
+            ViewBag.Rejected = rejected;
+            ViewBag.LeaveBalance = $"{remainingLeave}/{totalLeave}";
+            ViewBag.Name = HttpContext.Session.GetString("Name") ?? HttpContext.Session.GetString("Role");
+
             return View();
         }
 

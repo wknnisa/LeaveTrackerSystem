@@ -3,5 +3,82 @@
     ViewData["Title"] = "Manager Dashboard";
 }
 
-<h1>Welcome, Manager</h1>
-<p class="text-muted">Use the "Pending Requests" menu to review leave submissions.</p>
+<div class="container mt-4 mb-5">
+    <h2 class="fw-bold text-primary mb-3">Manager Dashboard</h2>
+    <p class="text-muted mb-4">Welcome back, @ViewBag.Name 👋</p>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <h6>Pending Approvals</h6>
+                    <h3 class="fw-bold text-warning">@ViewBag.Pending</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <h6>Approved</h6>
+                    <h3 class="fw-bold text-success">@ViewBag.Approved</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <h6>Rejected</h6>
+                    <h3 class="fw-bold text-danger">@ViewBag.Rejected</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-0">
+                <div class="card-body">
+                    <h6>Total Reviewed</h6>
+                    <h3 class="fw-bold text-primary">@ViewBag.Total</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-body">
+            <h5 class="fw-semibold text-center mb-3">Approvals by Month</h5>
+            <canvas id="approvalChart" class="w-100" style="max-width: 700px; margin: auto;"></canvas>
+        </div>
+    </div>
+
+    <div class="text-center d-md-none">
+        <a asp-action="AllRequests" class="btn btn-outline-primary px-4">View All Requests</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/chart.js/dist/chart.umd.js"></script>
+    <script>
+        const labels = JSON.parse('@Html.Raw(ViewBag.LabelsJson ?? "")');
+        const data = JSON.parse('@Html.Raw(ViewBag.DataJson ?? "")');
+
+        new Chart(document.getElementById('approvalChart'), {
+            type: 'bar',
+            data: {
+                labels: labels, 
+                datasets: [{
+                    label: 'Approved Requests',
+                    data: data,
+                    backgroundColor: '#198754'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+}

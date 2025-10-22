@@ -4,6 +4,7 @@ using LeaveTrackerSystem.WebApp.Filters;
 using LeaveTrackerSystem.WebApp.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 
 namespace LeaveTrackerSystem.WebApp.Controllers
 {
@@ -20,6 +21,31 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
         public IActionResult Index()
         {
+            if (!SessionHelper.IsSessionActive(HttpContext))
+            {
+                return RedirectToAction("Login", "Account", new { msg = "expired " });
+            }
+
+            var email = SessionHelper.GetUserEmail(HttpContext)!;
+            var requests = _managerService.GetAllRequestsForManager(email, null);
+
+            var total = requests.Count();
+            var approved = requests.Count(r => r.Status == LeaveStatus.Approved);
+            var pending = requests.Count(r => r.Status == LeaveStatus.Pending);
+            var rejected = requests.Count(r => r.Status == LeaveStatus.Rejected);
+
+            var monthlyData = requests.Where(r => r.Status == LeaveStatus.Approved).GroupBy(r => new DateTime(r.StartDate.Year, r.StartDate.Month, 1))
+                .OrderBy(g => g.Key).ToDictionary(g => g.Key.ToString("MMM yyyy"), g => g.Count());
+
+            ViewBag.LabelsJson = JsonConvert.SerializeObject(monthlyData.Keys);
+            ViewBag.DataJson = JsonConvert.SerializeObject(monthlyData.Values);
+
+            ViewBag.Total = total;
+            ViewBag.Approved = approved;
+            ViewBag.Pending = pending;
+            ViewBag.Rejected = rejected;
+            ViewBag.Name = HttpContext.Session.GetString("Name") ?? HttpContext.Session.GetString("Role");
+
             return View();
         }
 
