@@ -37,18 +37,18 @@ namespace LeaveTrackerSystem.Application.Services
             return requests.OrderBy(r => (int)r.Status).ToList();
         }
 
-        public bool UpdateLeaveStatus(int requestId, LeaveStatus newStatus)
+        public LeaveRequest? UpdateLeaveStatus(int requestId, LeaveStatus newStatus)
         {
             var request = _leaveRequestRepo.GetById(requestId);
 
             if (request == null || request.Status != LeaveStatus.Pending)
             {
-                return false;
+                return null;
             }
 
             request.Status = newStatus;
             _leaveRequestRepo.SaveChanges();
-            return true;
+            return request;
         }
     }
 }

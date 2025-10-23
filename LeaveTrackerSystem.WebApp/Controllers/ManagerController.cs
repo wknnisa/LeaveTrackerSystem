@@ -1,4 +1,5 @@
-﻿using LeaveTrackerSystem.Application.Services;
+﻿using LeaveTrackerSystem.Application.Interfaces;
+using LeaveTrackerSystem.Application.Services;
 using LeaveTrackerSystem.Domain.Enums;
 using LeaveTrackerSystem.WebApp.Filters;
 using LeaveTrackerSystem.WebApp.Helpers;
@@ -12,11 +13,14 @@ namespace LeaveTrackerSystem.WebApp.Controllers
     public class ManagerController : Controller
     {
         private readonly ManagerService _managerService;
+        private readonly INotificationService _notificationService;
 
         public ManagerController(
-            ManagerService managerService)
+            ManagerService managerService,
+            INotificationService notificationService)
         {
             _managerService = managerService;
+            _notificationService = notificationService;
         }
 
         public IActionResult Index()
@@ -29,7 +33,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             var email = SessionHelper.GetUserEmail(HttpContext)!;
             var requests = _managerService.GetAllRequestsForManager(email, null);
 
-            var total = requests.Count();
+            var total = requests.Count(r => r.Status == LeaveStatus.Approved ||  r.Status == LeaveStatus.Rejected );
             var approved = requests.Count(r => r.Status == LeaveStatus.Approved);
             var pending = requests.Count(r => r.Status == LeaveStatus.Pending);
             var rejected = requests.Count(r => r.Status == LeaveStatus.Rejected);
@@ -74,17 +78,55 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         [HttpPost]
         public IActionResult Approve(int id)
         {
-            _managerService.UpdateLeaveStatus(id, LeaveStatus.Approved);
-            TempData["Success"] = "Leave request approved successfully.";
-            return RedirectToAction("AllRequests");
+            var request = _managerService.UpdateLeaveStatus(id, LeaveStatus.Approved);
+
+            if (request != null)
+            {
+                var managerEmail = SessionHelper.GetUserEmail(HttpContext);
+
+                if (string.IsNullOrEmpty(managerEmail))
+                {
+                    TempData["Error"] = "Your session has expired. Please log in again";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                _notificationService.NotifyLeaveApproval(managerEmail, request, true);
+                TempData["Info"] = "Email simulated to Employee (Approved)";
+                TempData["Success"] = "Leave request approved successfully.";
+            }
+            else
+            {
+                TempData["Error"] = "Unable to approve request (already processed)";
+            }
+
+                return RedirectToAction("AllRequests");
         }
 
         [HttpPost]
         public IActionResult Reject(int id)
         {
-            _managerService.UpdateLeaveStatus(id, LeaveStatus.Rejected);
-            TempData["Info"] = "Leave request rejected.";
-            return RedirectToAction("AllRequests");
+            var request = _managerService.UpdateLeaveStatus(id, LeaveStatus.Rejected);
+
+            if (request != null)
+            {
+                var managerEmail = SessionHelper.GetUserEmail(HttpContext);
+                
+                if (string.IsNullOrEmpty(managerEmail))
+                {
+                    TempData["Error"] = "Your session has expired. Please log in again";
+                    return RedirectToAction("Login", "Account");
+                }
+
+                _notificationService.NotifyLeaveApproval(managerEmail, request, false);
+                TempData["Success"] = "Leave request rejected.";
+                TempData["Info"] = "📧 Email simulated to Employee (Rejected).";
+            }
+            else
+            {
+                TempData["Error"] = "Unable to reject request (already processed).";
+            }
+
+                return RedirectToAction("AllRequests");
         }
     }
 }

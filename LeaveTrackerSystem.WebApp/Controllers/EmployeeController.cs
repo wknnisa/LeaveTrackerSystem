@@ -1,5 +1,6 @@
 ﻿using LeaveTrackerSystem.Application.DTOs;
 using LeaveTrackerSystem.Application.Interfaces;
+using LeaveTrackerSystem.Domain.Entities;
 using LeaveTrackerSystem.Domain.Enums;
 using LeaveTrackerSystem.WebApp.Filters;
 using LeaveTrackerSystem.WebApp.Helpers;
@@ -15,11 +16,14 @@ namespace LeaveTrackerSystem.WebApp.Controllers
     public class EmployeeController : Controller
     {
         private readonly IEmployeeService _employeeService;
+        private readonly INotificationService _notificationService;
 
         public EmployeeController(
-            IEmployeeService employeeService)
+            IEmployeeService employeeService, 
+            INotificationService notificationService)
         {
             _employeeService = employeeService;
+            _notificationService = notificationService;
         }
 
         public IActionResult Index()
@@ -110,6 +114,22 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             };
 
             var (success, message) = _employeeService.SubmitLeaveRequest(email, dto);
+
+            if (success)
+            {
+
+                var selectedType = _employeeService.GetLeaveTypes().FirstOrDefault(t => t.Id == model.LeaveTypeId);
+
+                var request = new LeaveRequest
+                {
+                    LeaveType = new LeaveType { Name = selectedType?.Name ?? "Unknown" },
+                    StartDate = model.StartDate ?? DateTime.UtcNow,
+                    EndDate = model.EndDate ?? DateTime.UtcNow
+                };
+
+                _notificationService.NotifyLeaveSubmission(email, request);
+                TempData["Info"] = "📧 Email notification simulated for Manager.";
+            }
 
             TempData[success ? "Success" : "Error"] = message;
             return RedirectToAction("MyRequests");
