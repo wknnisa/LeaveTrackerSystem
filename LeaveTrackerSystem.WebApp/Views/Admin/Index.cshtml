@@ -3,14 +3,14 @@
 }
 
 <div class="container mt-4 mb-5">
-    <h2 class="fw-bold text-primary mb-3">Admin Dashboard</h2>
-    <p class="text-muted mb-4">Welcome back, @ViewBag.Name 👋</p>
+    <h2 class="fw-bold text-primary mb-3">@LangHelper.Get(Context, "AdminDashboard")</h2>
+    <p class="text-muted mb-4">@LangHelper.Get(Context, "WelcomeBack") @ViewBag.Name 👋</p>
 
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card text-center shadow-sm border-0">
                 <div class="card-body">
-                    <h6>Total Requests</h6>
+                    <h6>@LangHelper.Get(Context, "TotalRequests")</h6>
                     <h3 class="fw-bold text-primary">@ViewBag.Total</h3>
                 </div>
             </div>
@@ -18,7 +18,7 @@
         <div class="col-md-3">
             <div class="card text-center shadow-sm border-0">
                 <div class="card-body">
-                    <h6>Approved</h6>
+                    <h6>@LangHelper.Get(Context, "Approved")</h6>
                     <h3 class="fw-bold text-success">@ViewBag.Approved</h3>
                 </div>
             </div>
@@ -26,7 +26,7 @@
         <div class="col-md-3">
             <div class="card text-center shadow-sm border-0">
                 <div class="card-body">
-                    <h6>Pending</h6>
+                    <h6>@LangHelper.Get(Context, "Pending")</h6>
                     <h3 class="fw-bold text-warning">@ViewBag.Pending</h3>
                 </div>
             </div>
@@ -34,7 +34,7 @@
         <div class="col-md-3">
             <div class="card text-center shadow-sm border-0">
                 <div class="card-body">
-                    <h6>Rejected</h6>
+                    <h6>@LangHelper.Get(Context, "Rejected")</h6>
                     <h3 class="fw-bold text-danger">@ViewBag.Rejected</h3>
                 </div>
             </div>
@@ -43,13 +43,13 @@
 
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
-            <h5 class="fw-semibold text-center mb-3">Leave Requests by Type</h5>
+            <h5 class="fw-semibold text-center mb-3">@LangHelper.Get(Context, "LeaveRequestsByType")</h5>
             <canvas id="typeChart" style="max-width: 700px; margin: 0 auto;"></canvas>
         </div>
     </div>
 
     <div class="text-center d-md-none">
-        <a asp-action="AllRequests" class="btn btn-outline-primary px-4">View All Requests</a>
+        <a asp-action="AllRequests" class="btn btn-outline-primary px-4">@LangHelper.Get(Context, "ViewAllRequests")</a>
     </div>
 </div>
 

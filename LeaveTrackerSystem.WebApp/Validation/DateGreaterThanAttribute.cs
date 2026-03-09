@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using LeaveTrackerSystem.WebApp.Helpers;
+using System.ComponentModel.DataAnnotations;
 
 namespace LeaveTrackerSystem.WebApp.Validation
 {
@@ -31,7 +32,16 @@ namespace LeaveTrackerSystem.WebApp.Validation
 
             if (currentValue.Value < comparisonValue.Value)
             {
-                return new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} must be on or after {_comparisonProperty}.");
+                var httpContextAccessor = (IHttpContextAccessor?)validationContext.GetService(typeof(IHttpContextAccessor));
+
+                string localizedMessage = "End Date must be on or after Start Date.";
+
+                if (httpContextAccessor?.HttpContext != null)
+                {
+                    localizedMessage = LangHelper.Get(httpContextAccessor.HttpContext, "EndDateAfterStart");
+                }
+
+                return new ValidationResult(localizedMessage);
             }
 
             return ValidationResult.Success;

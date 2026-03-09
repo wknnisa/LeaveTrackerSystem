@@ -122,16 +122,16 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
                 var request = new LeaveRequest
                 {
-                    LeaveType = new LeaveType { Name = selectedType?.Name ?? "Unknown" },
+                    LeaveType = new LeaveType { Name = selectedType?.Name ?? LangHelper.Get(HttpContext, "Unknown") },
                     StartDate = model.StartDate ?? DateTime.UtcNow,
                     EndDate = model.EndDate ?? DateTime.UtcNow
                 };
 
                 _notificationService.NotifyLeaveSubmission(email, request);
-                TempData["Info"] = "📧 Email notification simulated for Manager.";
+                TempData["Info"] = LangHelper.Get(HttpContext, "NotificationSimulated");
             }
 
-            TempData[success ? "Success" : "Error"] = message;
+            TempData[success ? "Success" : "Error"] = success ? LangHelper.Get(HttpContext, "LeaveSubmitSuccess") : LangHelper.Get(HttpContext, "LeaveSubmitFail");
             return RedirectToAction("MyRequests");
         }
 
@@ -148,10 +148,10 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             ViewBag.statusOptions = new List<SelectListItem>
             {
-                new SelectListItem { Text = "All", Value = "", Selected = string.IsNullOrEmpty(status) },
-                new SelectListItem { Text = "Pending", Value = "Pending", Selected = status == "Pending" },
-                new SelectListItem { Text = "Approved", Value = "Approved", Selected = status == "Approved" },
-                new SelectListItem { Text = "Rejected", Value = "Rejected", Selected = status == "Rejected" }
+                new SelectListItem { Text = LangHelper.Get(HttpContext, "All"), Value = "", Selected = string.IsNullOrEmpty(status) },
+                new SelectListItem { Text = LangHelper.Get(HttpContext, "Pending"), Value = "Pending", Selected = status == "Pending" },
+                new SelectListItem { Text = LangHelper.Get(HttpContext, "Approved"), Value = "Approved", Selected = status == "Approved" },
+                new SelectListItem { Text = LangHelper.Get(HttpContext, "Rejected"), Value = "Rejected", Selected = status == "Rejected" }
             };
 
             return View(requests);

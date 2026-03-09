@@ -4,11 +4,11 @@
     ViewData["Title"] = "My Leave Requests";
 }
 <div class="container mt-4 mb-5">
-    <h3 class="fw-bold text-primary mb-4">My Leave Requests</h3>
+    <h3 class="fw-bold text-primary mb-4">@LangHelper.Get(Context, "MyLeaveRequests")</h3>
 
     <form method="get" asp-action="MyRequests" class="mb-4">
         <div class="d-flex align-items-center gap-2">
-            <label for="status" class="form-label mb-0 fw-semibold">Filter by Status:</label>
+            <label for="status" class="form-label mb-0 fw-semibold">@LangHelper.Get(Context, "FilterByStatus")</label>
             @Html.DropDownList("status", (List<SelectListItem>)ViewBag.StatusOptions, new {
             @class = "form-select w-auto", onchange = "this.form.submit();"
             })
@@ -21,24 +21,24 @@
             <table class="table table-bordered table-striped align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Leave Type</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Reason</th>
-                        <th>Status</th>
+                        <th>@LangHelper.Get(Context, "LeaveType")</th>
+                        <th>@LangHelper.Get(Context, "StartDate")</th>
+                        <th>@LangHelper.Get(Context, "EndDate")</th>
+                        <th>@LangHelper.Get(Context, "Reason")</th>
+                        <th>@LangHelper.Get(Context, "Status")</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var request in Model)
                     {
                         <tr>
-                            <td>@(request.LeaveType?.Name ?? "Other")</td>
+                            <td>@(request.LeaveType?.Name ?? LangHelper.Get(Context, "Other"))</td>
                             <td>@request.StartDate.ToShortDateString()</td>
                             <td>@request.EndDate.ToShortDateString()</td>
                             <td>@request.Reason</td>
                             <td>
                                 <span class="badge @(request.Status == LeaveStatus.Approved ? "bg-success" : request.Status == LeaveStatus.Rejected ? "bg-danger" : "bg-warning text-dark")">
-                                    @request.Status
+                                    @LangHelper.Get(Context, request.Status.ToString())
                                 </span>
                             </td>
                         </tr>
@@ -49,6 +49,6 @@
     }
     else
     {
-        <div class="alert alert-info text-center mt-4">No leave requests found.</div>
+        <div class="alert alert-info text-center mt-4">@LangHelper.Get(Context, "NoRequestsFound")</div>
     }
 </div>

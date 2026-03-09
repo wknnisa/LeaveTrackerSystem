@@ -39,25 +39,25 @@
                             @if (role == "Employee")
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Submit">Request Leave</a>
+                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Submit">@LangHelper.Get(Context, "RequestLeave")</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="MyRequests">My Requests</a>
+                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="MyRequests">@LangHelper.Get(Context, "MyRequests")</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="LeaveSummary">Leave Summary</a>
+                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="LeaveSummary">@LangHelper.Get(Context, "LeaveSummary")</a>
                                 </li>
                             }
                             @if (role == "Manager")
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Manager" asp-action="AllRequests">Pending Requests</a>
+                                    <a class="nav-link text-dark" asp-controller="Manager" asp-action="AllRequests">@LangHelper.Get(Context, "PendingRequests")</a>
                                 </li>
                             }
                             @if (role == "Admin")
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="AllRequests">All Requests</a>
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="AllRequests">@LangHelper.Get(Context, "AllRequests")</a>
                                 </li>
                             }
                         </ul>
@@ -67,17 +67,29 @@
                         {
                             <li class="nav-item">
                                 <span class="nav-link text-muted">
-                                    Logged in as: <strong>@role</strong>
+                                    @LangHelper.Get(Context, "LoggedInAs"): <strong>@role</strong>
                                 </span>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">Logout</a>
+                                @{
+                                    var currentLang = Context.Session.GetString("Lang") ?? "EN";
+                                    var toggleLang = currentLang == "EN" ? "BM" : "EN";
+                                }
+                                <a class="nav-link text-dark fw-bold text-uppercase" href="/Language/SwitchLanguage?lang=@toggleLang">
+                                    @toggleLang
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">@LangHelper.Get(Context, "Logout")</a>
                             </li>
                         }
+
                         else if (!isLoginPage)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-primary" asp-controller="Account" asp-action="Login">Login</a>
+                                <a class="nav-link text-primary" asp-controller="Account" asp-action="Login">@LangHelper.Get(Context, "Login")</a>
                             </li>
                         }
                     </ul>

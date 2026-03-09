@@ -64,8 +64,10 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
+            TempData["Info"] = LangHelper.Get(HttpContext, "LogoutSuccess");
+
             HttpContext.Session.Clear();
-            TempData["Info"] = "You have been logged out successfully.";
+            
             return RedirectToAction("Login", "Account");
         }
 

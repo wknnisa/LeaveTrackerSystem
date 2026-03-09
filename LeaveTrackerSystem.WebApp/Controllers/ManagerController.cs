@@ -66,10 +66,10 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             ViewBag.statusOptions = new List<SelectListItem>
             {
-                new SelectListItem { Text = "All", Value = "", Selected = string.IsNullOrEmpty(status) },
-                new SelectListItem { Text = "Pending", Value = "Pending", Selected = status == "Pending" },
-                new SelectListItem { Text = "Approved", Value = "Approved", Selected = status == "Approved" },
-                new SelectListItem { Text = "Rejected", Value = "Rejected", Selected = status == "Rejected" }
+                new SelectListItem { Text = LangHelper.Get(HttpContext, "All"), Value = "", Selected = string.IsNullOrEmpty(status) },
+                new SelectListItem { Text = LangHelper.Get(HttpContext, "Pending"), Value = "Pending", Selected = status == "Pending" },
+                new SelectListItem { Text = LangHelper.Get(HttpContext, "Approved"), Value = "Approved", Selected = status == "Approved" },
+                new SelectListItem { Text = LangHelper.Get(HttpContext, "Rejected"), Value = "Rejected", Selected = status == "Rejected" }
             };
 
             return View(requests);
@@ -86,17 +86,18 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
                 if (string.IsNullOrEmpty(managerEmail))
                 {
-                    TempData["Error"] = "Your session has expired. Please log in again";
+                    TempData["Error"] = LangHelper.Get(HttpContext, "SessionExpired");
                     return RedirectToAction("Login", "Account");
                 }
 
                 _notificationService.NotifyLeaveApproval(managerEmail, request, true);
-                TempData["Info"] = "Email simulated to Employee (Approved)";
-                TempData["Success"] = "Leave request approved successfully.";
+                TempData["Success"] = LangHelper.Get(HttpContext, "LeaveApprovedSuccess");
+                TempData["Info"] = LangHelper.Get(HttpContext, "NotificationApprovedSimulated");
+                
             }
             else
             {
-                TempData["Error"] = "Unable to approve request (already processed)";
+                TempData["Error"] = LangHelper.Get(HttpContext, "RejectFailedProcessed");
             }
 
                 return RedirectToAction("AllRequests");
@@ -113,17 +114,17 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 
                 if (string.IsNullOrEmpty(managerEmail))
                 {
-                    TempData["Error"] = "Your session has expired. Please log in again";
+                    TempData["Error"] = LangHelper.Get(HttpContext, "SessionExpired");
                     return RedirectToAction("Login", "Account");
                 }
 
                 _notificationService.NotifyLeaveApproval(managerEmail, request, false);
-                TempData["Success"] = "Leave request rejected.";
-                TempData["Info"] = "📧 Email simulated to Employee (Rejected).";
+                TempData["Success"] = LangHelper.Get(HttpContext, "LeaveRejectedSuccess");
+                TempData["Info"] = LangHelper.Get(HttpContext, "NotificationRejectedSimulated");
             }
             else
             {
-                TempData["Error"] = "Unable to reject request (already processed).";
+                TempData["Error"] = LangHelper.Get(HttpContext, "RejectFailedProcessed");
             }
 
                 return RedirectToAction("AllRequests");

@@ -2,6 +2,7 @@ using LeaveTrackerSystem.Application.Interfaces;
 using LeaveTrackerSystem.Application.Services;
 using LeaveTrackerSystem.Infrastructure.Persistence;
 using LeaveTrackerSystem.Infrastructure.Repositories;
+using LeaveTrackerSystem.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,7 @@ builder.Services.AddScoped<IUserRepository, EfUserRepository>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ManagerService>();
 builder.Services.AddScoped<AdminService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Add session services with configuration
 builder.Services.AddSession(options =>

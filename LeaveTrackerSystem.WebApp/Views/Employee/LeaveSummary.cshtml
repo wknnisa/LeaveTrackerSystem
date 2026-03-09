@@ -24,7 +24,7 @@
     <img src="~/img/LeaveTrackerLogo.png" alt="LogoIpsum Company Logo" class="img-fluid me-3" style="height: 60px;">
     <div>
         <h1 class="mb-0">LogoIpsum HRIS</h1>
-        <small class="text-muted mb-0">Leave Summary Reports - Approved Requests Only</small>
+        <small class="text-muted mb-0">@LangHelper.Get(Context, "LeaveSummaryReports")</small>
     </div>
 </div>
 
@@ -33,18 +33,18 @@
 <div class="container">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Leave Summary by Type</h2>
+        <h2 class="mb-0">@LangHelper.Get(Context, "LeaveSummaryByType")</h2>
         <div>
-            <a href="@Url.Action("ExportSummary", "Employee")" class="btn btn-outline-primary ms-3">Download PDF</a>
+            <a href="@Url.Action("ExportSummary", "Employee")" class="btn btn-outline-primary ms-3">@LangHelper.Get(Context, "DownloadPDF")</a>
         </div>
     </div>
 
     <table class="table table-striped">
         <thead class="table-dark text-center">
             <tr>
-                <th>Leave Type</th>
-                <th>Used</th>
-                <th>Remaining</th>
+                <th>@LangHelper.Get(Context, "LeaveType")</th>
+                <th>@LangHelper.Get(Context, "Used")</th>
+                <th>@LangHelper.Get(Context, "Remaining")</th>
             </tr>
         </thead>
         <tbody>
@@ -62,7 +62,7 @@
             else
             {
                 <tr>
-                    <td colspan="3" class="text-center text-muted">No leave date available.</td>
+                    <td colspan="3" class="text-center text-muted"> @LangHelper.Get(Context, "NoLeaveData")</td>
                 </tr>
             }
         </tbody>
@@ -73,7 +73,7 @@
         bool hasBarData = ViewBag.BarLabelsJson.ToString() != "[]" && ViewBag.BarDataJson.ToString() != "[]";
     }
 
-    <h3>Leave Usage Breakdown</h3>
+    <h3>@LangHelper.Get(Context, "LeaveUsageBreakdown")</h3>
     <div id="pieContainer" class="chart-container">
         @if (hasPieData)
         {
@@ -82,12 +82,12 @@
         else
         {
             <div class="alert alert-info text-center chart-placeholder">
-                No data to display for Pie Chart.
+                @LangHelper.Get(Context, "NoPieData")
             </div>
         }
     </div>
 
-    <h3>Leave Requests Per Month</h3>
+    <h3>@LangHelper.Get(Context, "LeaveRequestsPerMonth")</h3>
     <div id="barContainer" class="chart-container">
         @if (hasBarData)
         {
@@ -96,12 +96,10 @@
         else
         {
             <div class="alert alert-info text-center chart-placeholder">
-                No data to display for Bar Chart.
+                @LangHelper.Get(Context, "NoBarData")
             </div>
         }
     </div>
-
-
 </div>
 
 @section Scripts {
@@ -116,7 +114,7 @@
 
         if (labels.length === 0 || data.length === 0 || total === 0)
         {
-            document.getElementById("pieContainer").innerHTML = "<div class='alert alert-info text-center chart-placeholder'>No data to display.</div>";
+            document.getElementById("pieContainer").innerHTML = "<div class='alert alert-info text-center chart-placeholder'>@LangHelper.Get(Context, "NoPieData")</div>";
         }
         else
         {
@@ -126,7 +124,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Leave Used',
+                        label: '@LangHelper.Get(Context, "LeaveUsed")',
                         data: data,
                         backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
                         borderWidth: 1
@@ -140,7 +138,7 @@
                         },
                         title: {
                             display: true,
-                            text: 'Leave Usage Breakdown'
+                            text: '@LangHelper.Get(Context, "LeaveUsageBreakdown")'
                         }
                     }
                 }
@@ -158,7 +156,7 @@
 
         if (barLabels.length === 0 || barData.length === 0 || barTotal === 0)
         {
-            document.getElementById("barContainer").innerHTML = "<div class='alert alert-info text-center chart-placeholder'>No data to display.</div>";
+            document.getElementById("barContainer").innerHTML = "<div class='alert alert-info text-center chart-placeholder'>@LangHelper.Get(Context, "NoBarData")</div>";
         }
         else
         {
@@ -168,7 +166,7 @@
                 data: {
                     labels: barLabels,
                     datasets: [{
-                        label: 'Approved Leave Requests',
+                        label: '@LangHelper.Get(Context, "ApprovedLeaveRequests")',
                         data: barData,
                         backgroundColor: '#36A2EB'
                     }]
@@ -179,7 +177,7 @@
                         legend: { display: false },
                         title: {
                             display: true,
-                            text: 'Monthly Leave Usage'
+                            text: '@LangHelper.Get(Context, "MonthlyLeaveUsage")'
                         }
                    },
                    scales: {
