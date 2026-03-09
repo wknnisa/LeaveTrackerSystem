@@ -13,7 +13,9 @@ namespace LeaveTrackerSystem.Testing.Controllers
         {
             // Arrange
             var mockService = new Mock<IEmployeeService>();
-            var controller = new EmployeeController(mockService.Object);
+            var mockNotification = new Mock<INotificationService>();
+
+            var controller = new EmployeeController(mockService.Object, mockNotification.Object);
             controller.ControllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext()
