@@ -1,10 +1,10 @@
 # 🗂️ Leave Tracker System (ASP.NET Core MVC | Onion Architecture)
 
-A role-based Leave Management System built with ASP.NET Core MVC following Onion Architecture.
+A role-based Leave Management System built with ASP.NET Core MVC using Onion Architecture.
 
 The system simulates an internal enterprise HR workflow where employees can submit leave requests, managers approve or reject requests, and administrators monitor leave records.
 
-Includes reporting dashboards, PDF export, and unit testing.
+The system includes reporting dashboards, PDF export functionality, and unit testing.
 
 ---
 
@@ -102,11 +102,13 @@ Preview of major UI pages and reporting features.
 
 ## 🧪 Testing
 
-- Manual Test Cases 
-  [Manual Test Cases](docs/test-cases/ManualTests_v1.0.md)
+### Manual Test Cases 
+See detailed functional test scenarios:
 
-- Unit Tests
-  Located in `Testing/` project
+[Manual Test Cases v1.1](docs/test-cases/ManualTests_v1.1.md)
+
+### Unit Tests
+Located in the `Testing/` project.
 
 Run tests:
 
@@ -119,4 +121,4 @@ dotnet test
 ## 📌 Project Status
 
 Final bugfix pass completed and core workflow verified.
-System ready for deployment preparation.
+The system is ready for deployment preparation.
