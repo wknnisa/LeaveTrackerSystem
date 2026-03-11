@@ -3,20 +3,21 @@ using LeaveTrackerSystem.Domain.Entities;
 
 namespace LeaveTrackerSystem.Application.Services
 {
-    public class AdminService
+    public class AdminService : IAdminService
     {
         private readonly ILeaveRequestRepository _leaveRequestRepo;
 
-        public AdminService(
-            ILeaveRequestRepository leaveRequestRepo
-            )
+        public AdminService(ILeaveRequestRepository leaveRequestRepo)
         {
             _leaveRequestRepo = leaveRequestRepo;
         }
 
         public List<LeaveRequest> GetAllRequests()
         {
-            return _leaveRequestRepo.GetAll().OrderBy(r => (int)r.Status).ToList();
+            return _leaveRequestRepo
+                .GetAll()
+                .OrderBy(r => (int)r.Status)
+                .ToList();
         }
     }
 }

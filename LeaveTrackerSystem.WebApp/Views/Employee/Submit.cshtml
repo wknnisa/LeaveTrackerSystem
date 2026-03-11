@@ -2,7 +2,8 @@
 
 @{
     ViewData["Title"] = "Submit Leave Request";
-}<div class="container mt-4 mb-5">
+}
+<div class="container mt-4 mb-5">
     <h3 class="fw-bold text-primary mb-4">@LangHelper.Get(Context, "SubmitLeaveRequest")</h3>
 
     @await Html.PartialAsync("_FlashMessagePartial")
@@ -12,16 +13,15 @@
             <label asp-for="StartDate" class="form-label fw-semibold"> 
                 @LangHelper.Get(Context, "StartDate") <span class="text-danger">*</span>
             </label>
-            <input asp-for="StartDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" value="@(Model.StartDate?.ToString("yyyy-MM-dd"))" />
-            <span class="text-danger">@LangHelper.Get(Context, "StartDateRequired")</span>
+            <input asp-for="StartDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
         </div>
         <div class="form-group mb-3">
             <label asp-for="EndDate" class="form-label fw-semibold">
                 @LangHelper.Get(Context, "EndDate") <span class="text-danger">*</span>
             </label>
-            <input asp-for="EndDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" value="@(Model.EndDate?.ToString("yyyy-MM-dd"))" />
-            <span class="text-danger">@LangHelper.Get(Context, "EndDateRequired")</span>
-            <span class="text-danger">@LangHelper.Get(Context, "EndDateAfterStart")</span>
+            <input asp-for="EndDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
         </div>
         <div class="form-group mb-3">
             <label asp-for="LeaveTypeId" class="form-label fw-semibold">
@@ -30,14 +30,14 @@
             <select asp-for="LeaveTypeId" asp-items="Model.LeaveTypes" class="form-select">
                 <option value="">-- @LangHelper.Get(Context, "Select") --</option>
             </select>
-            <span class="text-danger">@LangHelper.Get(Context, "LeaveTypeRequired")</span>
+            <span asp-validation-for="LeaveTypeId" class="text-danger"></span>
         </div>
         <div class="form-group mb-3">
             <label asp-for="Reason" class="form-label fw-semibold">
                 @LangHelper.Get(Context, "Reason") <span class="text-danger">*</span>
             </label>
             <textarea asp-for="Reason" class="form-control" rows="3"></textarea>
-            <span class="text-danger">@LangHelper.Get(Context, "ReasonRequired")</span>
+            <span asp-validation-for="Reason" class="text-danger"></span>
         </div>
 
         <button type="submit" class="btn btn-primary mt-2">@LangHelper.Get(Context, "Submit")</button>

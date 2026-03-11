@@ -43,7 +43,7 @@ namespace LeaveTrackerSystem.Application.Services
                 return (false, "Leave type not found.");
             }
 
-            var daysRequested = (dto.EndDate - dto.StartDate).TotalDays + 1;
+            var daysRequested = (dto.EndDate - dto.StartDate).Days + 1;
 
             if (daysRequested > leaveType.DefaultDays)
             {
@@ -58,7 +58,7 @@ namespace LeaveTrackerSystem.Application.Services
                 EndDate = dto.EndDate,
                 Reason = dto.Reason,
                 Status = LeaveStatus.Pending,
-                RequestedAt = DateTime.Now,
+                RequestedAt = DateTime.UtcNow,
             };
 
             _leaveRequestRepo.Add(request);
@@ -94,7 +94,7 @@ namespace LeaveTrackerSystem.Application.Services
             var summary = leaveTypes.ToDictionary(lt => lt.Name,
                 lt =>
                 {
-                    var approved = requests.Where(r => r.LeaveTypeId == lt.Id && r.Status == LeaveStatus.Approved).ToList();
+                    var approved = requests.Where(r => r.LeaveTypeId == lt.Id && r.Status == LeaveStatus.Approved);
                     var usedDays = approved.Sum(r => (r.EndDate - r.StartDate).TotalDays + 1);
                     var remaining = Math.Max(0, lt.DefaultDays - (int)usedDays);
 

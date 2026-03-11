@@ -1,4 +1,5 @@
-﻿using LeaveTrackerSystem.Application.Services;
+﻿using LeaveTrackerSystem.Application.Interfaces;
+using LeaveTrackerSystem.Application.Services;
 using LeaveTrackerSystem.Domain.Enums;
 using LeaveTrackerSystem.WebApp.Filters;
 using LeaveTrackerSystem.WebApp.Helpers;
@@ -10,9 +11,9 @@ namespace LeaveTrackerSystem.WebApp.Controllers
     [AuthorizeSession(Role = "Admin")]
     public class AdminController : Controller
     {
-        private readonly AdminService _adminService;
+        private readonly IAdminService _adminService;
         public AdminController(
-            AdminService adminService) 
+            IAdminService adminService) 
         { 
             _adminService = adminService;
         }
@@ -50,14 +51,6 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
                 return RedirectToAction("Login", "Account", new { msg = "expired" });
-            }
-
-            var role = SessionHelper.GetUserRole(HttpContext);
-
-            if (role != "Admin")
-            {
-                TempData["Error"] = "Unauthorized access.";
-                return RedirectToAction("Login", "Account");
             }
 
             var allRequests = _adminService.GetAllRequests();

@@ -30,16 +30,21 @@ namespace LeaveTrackerSystem.Testing.Services
         [Fact]
         public void UpdateLeaveStatus_ShouldApprovePendingRequest()
         {
+            // Arrange
             var request = new LeaveRequest
             {
-                Status = LeaveStatus.Pending
+                Status = LeaveStatus.Pending,
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddDays(2)
             };
 
             _dbContext.LeaveRequests.Add(request);
             _dbContext.SaveChanges();
 
+            // Act
             var result = _service.UpdateLeaveStatus(request.Id, LeaveStatus.Approved);
 
+            // Assert
             result.Should().NotBeNull();
             result.Status.Should().Be(LeaveStatus.Approved);
         }
@@ -47,16 +52,22 @@ namespace LeaveTrackerSystem.Testing.Services
         [Fact]
         public void UpdateLeaveStatus_ShouldRejectPendingRequest()
         {
+            // Arrange
             var request = new LeaveRequest
             {
-                Status = LeaveStatus.Pending
+                Status = LeaveStatus.Pending,
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddDays(2)
             };
 
+            
             _dbContext.LeaveRequests.Add(request);
             _dbContext.SaveChanges();
 
+            // Act
             var result = _service.UpdateLeaveStatus(request.Id, LeaveStatus.Rejected);
 
+            // Assert
             result.Should().NotBeNull();
             result.Status.Should().Be(LeaveStatus.Rejected);
         }
@@ -64,16 +75,21 @@ namespace LeaveTrackerSystem.Testing.Services
         [Fact]
         public void UpdateLeaveStatus_ShouldReturnNull_WhenRequestAlreadyProcessed()
         {
+            // Arrange
             var request = new LeaveRequest
             {
-                Status = LeaveStatus.Rejected
+                Status = LeaveStatus.Rejected,
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddDays(2)
             };
 
             _dbContext.LeaveRequests.Add(request);
             _dbContext.SaveChanges();
 
+            // Act
             var result = _service.UpdateLeaveStatus(request.Id, LeaveStatus.Approved);
 
+            // Assert
             result.Should().BeNull();
         }
     }

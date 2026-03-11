@@ -9,11 +9,11 @@ namespace LeaveTrackerSystem.Testing.Repositories
 {
     public class EfLeaveRequestRepositoryTests
     {
-        private LeaveTrackerDbContext _dbContext;
+        private readonly LeaveTrackerDbContext _dbContext;
         private readonly EfLeaveRequestRepository _repository;
 
         public EfLeaveRequestRepositoryTests()
-        {
+        { 
             var options = new DbContextOptionsBuilder<LeaveTrackerDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
@@ -36,7 +36,7 @@ namespace LeaveTrackerSystem.Testing.Repositories
                 LeaveType = new LeaveType { Name = "Annual", DefaultDays = 14 },
                 Status = LeaveStatus.Approved
             };
-            var pending = new LeaveRequest()
+            var pending = new LeaveRequest
             {
                 UserId = user.Id,
                 LeaveType = new LeaveType { Name = "Sick", DefaultDays = 10 },
@@ -56,11 +56,12 @@ namespace LeaveTrackerSystem.Testing.Repositories
         [Fact]
         public void Add_ShouldInsertRecordIntoDatabase()
         {
+            // Arrange
             var user = new User { Email = "add@example.com" };
             _dbContext.Users.Add(user);
             _dbContext.SaveChanges();
 
-            var newRequest = new LeaveRequest()
+            var newRequest = new LeaveRequest
             {
                 User = user, 
                 Status = LeaveStatus.Pending,
@@ -68,9 +69,11 @@ namespace LeaveTrackerSystem.Testing.Repositories
                 EndDate = DateTime.Today.AddDays(2)
             };
 
+            // Act
             _repository.Add(newRequest);
             _dbContext.SaveChanges();
 
+            // Assert
             _dbContext.LeaveRequests.Should().ContainSingle();
         }
     }

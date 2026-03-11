@@ -4,7 +4,7 @@ using LeaveTrackerSystem.Domain.Enums;
 
 namespace LeaveTrackerSystem.Application.Services
 {
-    public class ManagerService
+    public class ManagerService : IManagerService
     {
         private readonly ILeaveRequestRepository _leaveRequestRepo;
         private readonly IUserRepository _userRepo;
@@ -24,7 +24,7 @@ namespace LeaveTrackerSystem.Application.Services
 
             if (currentUser == null)
             {
-                return new List<LeaveRequest>();
+                return new();
             }
 
             var requests = _leaveRequestRepo.GetAll().Where(r => r.UserId != currentUser.Id);
@@ -41,7 +41,7 @@ namespace LeaveTrackerSystem.Application.Services
         {
             var request = _leaveRequestRepo.GetById(requestId);
 
-            if (request == null || request.Status != LeaveStatus.Pending)
+            if (request is null || request.Status != LeaveStatus.Pending)
             {
                 return null;
             }

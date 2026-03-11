@@ -18,8 +18,8 @@ builder.Services.AddScoped<ILeaveRequestRepository, EfLeaveRequestRepository>();
 builder.Services.AddScoped<ILeaveTypeRepository, EfLeaveTypeRepository>();
 builder.Services.AddScoped<IUserRepository, EfUserRepository>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-builder.Services.AddScoped<ManagerService>();
-builder.Services.AddScoped<AdminService>();
+builder.Services.AddScoped<IManagerService, ManagerService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Add session services with configuration

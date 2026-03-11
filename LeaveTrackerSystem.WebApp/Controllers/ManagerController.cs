@@ -12,11 +12,11 @@ namespace LeaveTrackerSystem.WebApp.Controllers
     [AuthorizeSession(Role = "Manager")]
     public class ManagerController : Controller
     {
-        private readonly ManagerService _managerService;
+        private readonly IManagerService _managerService;
         private readonly INotificationService _notificationService;
 
         public ManagerController(
-            ManagerService managerService,
+            IManagerService managerService,
             INotificationService notificationService)
         {
             _managerService = managerService;
@@ -27,16 +27,16 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
-                return RedirectToAction("Login", "Account", new { msg = "expired " });
+                return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
             var email = SessionHelper.GetUserEmail(HttpContext)!;
             var requests = _managerService.GetAllRequestsForManager(email, null);
-
-            var total = requests.Count(r => r.Status == LeaveStatus.Approved ||  r.Status == LeaveStatus.Rejected );
+            
             var approved = requests.Count(r => r.Status == LeaveStatus.Approved);
-            var pending = requests.Count(r => r.Status == LeaveStatus.Pending);
             var rejected = requests.Count(r => r.Status == LeaveStatus.Rejected);
+            var pending = requests.Count(r => r.Status == LeaveStatus.Pending);
+            var total = approved + rejected;
 
             var monthlyData = requests.Where(r => r.Status == LeaveStatus.Approved).GroupBy(r => new DateTime(r.StartDate.Year, r.StartDate.Month, 1))
                 .OrderBy(g => g.Key).ToDictionary(g => g.Key.ToString("MMM yyyy"), g => g.Count());
@@ -76,6 +76,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Approve(int id)
         {
             var request = _managerService.UpdateLeaveStatus(id, LeaveStatus.Approved);
@@ -100,10 +101,11 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 TempData["Error"] = LangHelper.Get(HttpContext, "RejectFailedProcessed");
             }
 
-                return RedirectToAction("AllRequests");
+            return RedirectToAction("AllRequests");
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Reject(int id)
         {
             var request = _managerService.UpdateLeaveStatus(id, LeaveStatus.Rejected);

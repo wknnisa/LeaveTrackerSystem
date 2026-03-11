@@ -36,11 +36,11 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             var email = SessionHelper.GetUserEmail(HttpContext)!;
             var summary = _employeeService.GetLeaveSummary(email);
             var requests = _employeeService.GetMyRequests(email, null).ToList();
-
-            var total = requests.Count;
+            
             var approved = requests.Count(r => r.Status == LeaveStatus.Approved);
             var pending = requests.Count(r => r.Status == LeaveStatus.Pending);
             var rejected = requests.Count(r => r.Status == LeaveStatus.Rejected);
+            var total = requests.Count;
 
             var totalLeave = summary.Values.Sum(v => v.Remaining + v.Used);
             var usedLeave = summary.Values.Sum(v => v.Used);
@@ -83,6 +83,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Submit(LeaveRequestViewModel model)
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
@@ -117,7 +118,6 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             if (success)
             {
-
                 var selectedType = _employeeService.GetLeaveTypes().FirstOrDefault(t => t.Id == model.LeaveTypeId);
 
                 var request = new LeaveRequest

@@ -13,9 +13,17 @@ namespace LeaveTrackerSystem.WebApp.Filters
 
             var role = session.GetString("Role");
 
-            if (string.IsNullOrEmpty(role) || (Role != null && role != Role))
+            // Case 1: Not logged in
+            if (string.IsNullOrEmpty(role))
             {
                 context.Result = new RedirectToActionResult("Login", "Account", null);
+                return;
+            }
+
+            // Case 2: Logged in but wrong role
+            if (Role != null && role != Role)
+            {
+                context.Result = new RedirectToActionResult("Index", "Home", null);
                 return;
             }
 

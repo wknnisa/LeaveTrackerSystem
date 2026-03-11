@@ -11,12 +11,30 @@ namespace LeaveTrackerSystem.WebApp.Services.Pdf
             var page = document.AddPage();
             var gfx = XGraphics.FromPdfPage(page);
 
+            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img/LeaveTrackerLogo.png");
+
+            if (File.Exists(logoPath))
+            {
+                var logo = XImage.FromFile(logoPath);
+
+                double logoWidth = 90;
+
+                double logoHeight = logo.PixelHeight * logoWidth / logo.PixelWidth;
+
+                gfx.DrawImage(logo, (page.Width - logoWidth) / 2, 40, logoWidth, logoHeight);
+            }
+
+            // Company Name
+            var fontCompany = new XFont("Arial", 13, XFontStyle.Bold);
+            gfx.DrawString("Leave Tracker System", fontCompany, XBrushes.Black, new XRect(0, 70, page.Width, 20), XStringFormats.TopCenter);
+
             var fontTitle = new XFont("Arial", 18, XFontStyle.Bold);
             var fontHeader = new XFont("Arial", 12, XFontStyle.Bold);
             var fontCell = new XFont("Arial", 12, XFontStyle.Regular);
             var pen = new XPen(XColors.Black, 0.5); // Thin black border
 
-            double y = 40;
+            // Start title lower
+            double y = 100;
             double rowHeight = 25;
 
             // Title 
