@@ -22,13 +22,18 @@ builder.Host.UseSerilog();
 // Database
 var home = Environment.GetEnvironmentVariable("HOME");
 
-var dbFolder = !string.IsNullOrEmpty(home)
-    ? Path.Combine(home, "data")
-    : "Data";
+string dbPath;
 
-Directory.CreateDirectory(dbFolder);
-
-var dbPath = Path.Combine(dbFolder, "leavetracker.db");
+if (!string.IsNullOrEmpty(home))
+{
+    var dataFolder = Path.Combine(home, "data");
+    Directory.CreateDirectory(dataFolder);
+    dbPath = Path.Combine(dataFolder, "leavetracker.db");
+}
+else
+{
+    dbPath = Path.Combine(AppContext.BaseDirectory, "leavetracker.db");
+}
 
 builder.Services.AddDbContext<LeaveTrackerDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
