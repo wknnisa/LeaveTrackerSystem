@@ -9,31 +9,18 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 
-LoggingExtensions.ConfigureSerilog();
+//LoggingExtensions.ConfigureSerilog();
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog();
+//builder.Host.UseSerilog();
 
 // Database
 //builder.Services.AddDbContext<LeaveTrackerDbContext>(options => 
 //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Database
-var home = Environment.GetEnvironmentVariable("HOME");
-
-string dbPath;
-
-if (!string.IsNullOrEmpty(home))
-{
-    var dataFolder = Path.Combine(home, "data");
-    Directory.CreateDirectory(dataFolder);
-    dbPath = Path.Combine(dataFolder, "leavetracker.db");
-}
-else
-{
-    dbPath = Path.Combine(AppContext.BaseDirectory, "leavetracker.db");
-}
+// SQLite database path (Azure safe)
+var dbPath = Path.Combine(AppContext.BaseDirectory, "leavetracker.db");
 
 builder.Services.AddDbContext<LeaveTrackerDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
