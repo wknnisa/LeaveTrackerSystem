@@ -19,14 +19,8 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.Services.AddDbContext<LeaveTrackerDbContext>(options => 
 //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// SQLite database path (Azure persistent storage)
-var home = Environment.GetEnvironmentVariable("HOME");
-
-var dbPath = !string.IsNullOrEmpty(home)
-    ? Path.Combine(home, "data", "leavetracker.db")
-    : Path.Combine(AppContext.BaseDirectory, "leavetracker.db");
-
-Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+// SQLite database path (Azure-safe)
+var dbPath = Path.Combine(@"C:\home\site", "leavetracker.db");
 
 builder.Services.AddDbContext<LeaveTrackerDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
