@@ -135,7 +135,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             return RedirectToAction("MyRequests");
         }
 
-        public IActionResult MyRequests(string? status)
+        public IActionResult MyRequests(string? status, int page = 1)
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
@@ -144,7 +144,15 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             var email = SessionHelper.GetUserEmail(HttpContext)!;
 
-            var requests = _employeeService.GetMyRequests(email, status);
+            int pageSize = 10;
+
+            var result = _employeeService.GetMyRequests(email, status, page, pageSize);
+
+            var requests = result.Requests;
+
+            ViewBag.Page = page;
+            ViewBag.Status = status;
+            ViewBag.HasNextPage = result.HasNextPage;
 
             ViewBag.statusOptions = new List<SelectListItem>
             {

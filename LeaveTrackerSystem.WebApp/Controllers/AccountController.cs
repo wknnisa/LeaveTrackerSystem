@@ -9,10 +9,13 @@ namespace LeaveTrackerSystem.WebApp.Controllers
     public class AccountController : Controller
     {
         private readonly LeaveTrackerDbContext _dbContext;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(LeaveTrackerDbContext dbContext)
+        public AccountController(LeaveTrackerDbContext dbContext, 
+            ILogger<AccountController> logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -30,6 +33,8 @@ namespace LeaveTrackerSystem.WebApp.Controllers
         { 
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Login attempt failed due to invalid model state for email {Email}", model.Email);
+
                 TempData["Error"] = "Please fill in all required fields.";
                 return View(model);
             }
@@ -38,12 +43,17 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             if (user == null)
             {
+                _logger.LogWarning("Failed login attempt for email {Email}", model.Email);
+
                 TempData["Error"] = "Invalid email or password.";
                 return View(model);
             }
 
             HttpContext.Session.SetString("Email", user.Email);
             HttpContext.Session.SetString("Role", user.Role.ToString());
+
+            _logger.LogInformation("User {Email} logged in with role {Role}", user.Email, user.Role);
+
             TempData["Success"] = $"Welcome back, {user.Role}";
 
             return user.Role switch
@@ -65,6 +75,8 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             }
 
             TempData["Info"] = LangHelper.Get(HttpContext, "LogoutSuccess");
+
+            _logger.LogInformation("User {Email} with role {Role} logged out", email ?? "Unknown", role ?? "Unknown");
 
             HttpContext.Session.Clear();
             

@@ -37,6 +37,38 @@ namespace LeaveTrackerSystem.Application.Services
             return requests.OrderBy(r => (int)r.Status).ToList();
         }
 
+        public (List<LeaveRequest> Requests, bool HasNextPage) GetAllRequestsForManager(string email, string? status, int page, int pageSize)
+        {
+            var currentUser = _userRepo.GetByEmail(email);
+
+            if (currentUser == null)
+            {
+                return new();
+            }
+
+            var requests = _leaveRequestRepo.GetAll().Where(r => r.UserId != currentUser.Id);
+
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeaveStatus>(status, out var parsed))
+            {
+                requests = requests.Where(r => r.Status == parsed);
+            }
+
+            var paged = requests
+                .OrderBy(r => (int)r.Status)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize + 1)
+                .ToList();
+
+            var hasNextPage = paged.Count > pageSize;
+
+            if (hasNextPage)
+            {
+                paged.RemoveAt(pageSize);
+            }
+
+            return (paged, hasNextPage);
+        }
+
         public LeaveRequest? UpdateLeaveStatus(int requestId, LeaveStatus newStatus)
         {
             var request = _leaveRequestRepo.GetById(requestId);

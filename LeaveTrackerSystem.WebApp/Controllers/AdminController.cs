@@ -1,5 +1,4 @@
 ﻿using LeaveTrackerSystem.Application.Interfaces;
-using LeaveTrackerSystem.Application.Services;
 using LeaveTrackerSystem.Domain.Enums;
 using LeaveTrackerSystem.WebApp.Filters;
 using LeaveTrackerSystem.WebApp.Helpers;
@@ -27,10 +26,10 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             var allRequests = _adminService.GetAllRequests();
 
-            var total = allRequests.Count();
             var approved = allRequests.Count(r => r.Status == LeaveStatus.Approved);
             var pending = allRequests.Count(r => r.Status == LeaveStatus.Pending);
             var rejected = allRequests.Count(r => r.Status == LeaveStatus.Rejected);
+            var total = allRequests.Count();
 
             var leaveTypeCounts = allRequests.Where(r => r.LeaveType != null).GroupBy(r => r.LeaveType!.Name).ToDictionary(g => g.Key, g => g.Count());
 
@@ -46,16 +45,23 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             return View();
         }
 
-        public IActionResult AllRequests()
+        public IActionResult AllRequests(int page = 1)
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
                 return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
-            var allRequests = _adminService.GetAllRequests();
+            int pageSize = 10;
 
-            return View(allRequests);
+            var result = _adminService.GetAllRequests(page, pageSize);
+
+            var requests = result.Requests;
+
+            ViewBag.Page = page;
+            ViewBag.HasNextPage = result.HasNextPage;
+
+            return View(requests);
         }
     }
 }

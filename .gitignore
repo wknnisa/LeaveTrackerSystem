@@ -413,3 +413,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Application logs
+logs/
+*.log

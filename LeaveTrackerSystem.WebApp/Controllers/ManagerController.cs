@@ -1,5 +1,4 @@
 ﻿using LeaveTrackerSystem.Application.Interfaces;
-using LeaveTrackerSystem.Application.Services;
 using LeaveTrackerSystem.Domain.Enums;
 using LeaveTrackerSystem.WebApp.Filters;
 using LeaveTrackerSystem.WebApp.Helpers;
@@ -53,7 +52,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             return View();
         }
 
-        public IActionResult AllRequests(string? status)
+        public IActionResult AllRequests(string? status, int page = 1)
         {
             if (!SessionHelper.IsSessionActive(HttpContext))
             {
@@ -62,7 +61,15 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             var email = SessionHelper.GetUserEmail(HttpContext)!;
 
-            var requests = _managerService.GetAllRequestsForManager(email, status);
+            int pageSize = 10;
+
+            var result = _managerService.GetAllRequestsForManager(email, status, page, pageSize);
+
+            var requests = result.Requests;
+
+            ViewBag.Page = page;
+            ViewBag.Status = status;
+            ViewBag.HasNextPage = result.HasNextPage;
 
             ViewBag.statusOptions = new List<SelectListItem>
             {
@@ -129,7 +136,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 TempData["Error"] = LangHelper.Get(HttpContext, "RejectFailedProcessed");
             }
 
-                return RedirectToAction("AllRequests");
+            return RedirectToAction("AllRequests");
         }
     }
 }

@@ -26,6 +26,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "05_Testing", "05_Testing", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeaveTrackerSystem.WebApp", "LeaveTrackerSystem.WebApp\LeaveTrackerSystem.WebApp.csproj", "{30C369A0-6E62-9FFC-81F2-5868D1749155}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeaveTrackerSystem.Api", "LeaveTrackerSystem.Api\LeaveTrackerSystem.Api.csproj", "{5C6D7156-65AA-4D22-B65A-998CBA7B187C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{30C369A0-6E62-9FFC-81F2-5868D1749155}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30C369A0-6E62-9FFC-81F2-5868D1749155}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30C369A0-6E62-9FFC-81F2-5868D1749155}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C6D7156-65AA-4D22-B65A-998CBA7B187C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C6D7156-65AA-4D22-B65A-998CBA7B187C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C6D7156-65AA-4D22-B65A-998CBA7B187C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C6D7156-65AA-4D22-B65A-998CBA7B187C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
