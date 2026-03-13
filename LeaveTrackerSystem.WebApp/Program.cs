@@ -7,6 +7,7 @@ using LeaveTrackerSystem.WebApp.Logging;
 using LeaveTrackerSystem.WebApp.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System;
 
 LoggingExtensions.ConfigureSerilog();
 
@@ -15,8 +16,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 
 // Database
-builder.Services.AddDbContext<LeaveTrackerDbContext>(options => 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContext<LeaveTrackerDbContext>(options => 
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Database
+var home = Environment.GetEnvironmentVariable("HOME");
+
+var dbPath = !string.IsNullOrEmpty(home)
+    ? Path.Combine(home, "data", "leavetracker.db")
+    : "leaveTracker.db";
+
+builder.Services.AddDbContext<LeaveTrackerDbContext>(options =>
+    options.UseSqlite($"Data Source={dbPath}"));
 
 // MVC
 builder.Services.AddControllersWithViews();
@@ -64,5 +75,11 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<LeaveTrackerDbContext>();
+    db.Database.Migrate();
+}
 
 app.Run();
