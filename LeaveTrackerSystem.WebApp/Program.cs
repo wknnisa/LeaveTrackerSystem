@@ -19,8 +19,8 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.Services.AddDbContext<LeaveTrackerDbContext>(options => 
 //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// SQLite database path (Azure-safe)
-var dbPath = Path.Combine(@"C:\home\site", "leavetracker.db");
+// SQLite database path for Azure App Service
+var dbPath = Path.Combine(@"D:\home", "leavetracker.db");
 
 builder.Services.AddDbContext<LeaveTrackerDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
