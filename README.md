@@ -9,6 +9,32 @@ The project demonstrates several backend engineering practices including **layer
 
 ---
 
+## 🌐 Live Demo
+
+Azure deployment:
+
+[Live Demo](https://leavetrackersystem-demo-bfdtfcdvbrf7dwhe.malaysiawest-01.azurewebsites.net)
+
+Demo login credentials are provided below.
+
+---
+
+## 🔑 Demo Login
+
+### Employee  
+email: employee@example.com  
+password: employee123  
+
+### Manager  
+email: manager@example.com  
+password: manager123  
+
+### Admin  
+email: admin@example.com  
+password: admin123
+
+---
+
 ## 🧠 Key Features
 
 ### Role-Based Workflow
@@ -47,19 +73,19 @@ The project demonstrates several backend engineering practices including **layer
 
 The system follows a structured approval workflow.
 
-## Employee
+### Employee
 
 1. Submit leave request
 2. System validates leave balance
 3. Request status set to **Pending**
 
-## Manager
+### Manager
 
 1. Review employee leave requests
 2. Approve or reject requests
 3. Request status updated to **Approved** or **Rejected**
 
-## Admin
+### Admin
 
 1. View all leave requests
 2. Monitor system-wide leave usage
@@ -76,7 +102,8 @@ This ensures leave requests follow a **controlled approval process before being 
 - ASP.NET Core MVC
 - C#
 - Entity Framework Core
-- SQL Server
+- SQLite (used for WebApp demo deployment)
+- SQL Server (used by API project)
 
 ### Frontend
 - Razor Views
@@ -94,9 +121,19 @@ This ensures leave requests follow a **controlled approval process before being 
 
 ---
 
-## 🧱 Architecture
+## 🏗 System Architecture
 
-The system follows **Onion Architecture** to separate concerns and maintain scalability.
+The system follows **Onion Architecture** where dependencies flow inward.
+
+WebApp / Api  
+↓  
+Application (services, DTOs)  
+↓  
+Domain (entities, enums)  
+↓  
+Infrastructure (EF Core repositories, persistence)
+
+### Project Structure
 
 - `Domain` – Entities, enums, and core domain models
 - `Application` – Business logic services and DTOs
@@ -168,15 +205,25 @@ Run the MVC application:
 dotnet run --project LeaveTrackerSystem.WebApp
 ```
 
-Run the API project:
+Run the API project (for local development and Swagger testing):
 
 ```bash
 dotnet run --project LeaveTrackerSystem.Api
 ```
 
-Access API documentation:
+Once the API starts, open Swagger in your browser:
 
-`https://localhost:{port}/swagger`
+[Swagger](https://localhost:{port}/swagger)
+
+Swagger provides interactive documentation where you can test the available API endpoints.
+
+---
+
+## 🚀 Deployment
+
+The MVC WebApp project is configured to run using **SQLite** so it can be deployed easily without requiring a database server.
+
+The API project uses **SQL Server** and can be configured separately for environments where SQL Server is available.
 
 ---
 
