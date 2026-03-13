@@ -186,13 +186,12 @@ The system also exposes REST API endpoints through the `LeaveTrackerSystem.Api` 
 
 API documentation is available via **Swagger UI**.
 
-Example endpoints:
+Example endpoints currently implemented:
 
 - `GET /api/leave-requests`
-- `GET /api/leave-summary`
 - `GET /api/leave-types`
 
-These endpoints allow programmatic access to leave management data and demonstrate service-layer reuse between MVC and API layers.
+These endpoints demonstrate how backend services can be exposed through a REST API layer while reusing the same business logic used by the MVC application.
 
 ---
 
