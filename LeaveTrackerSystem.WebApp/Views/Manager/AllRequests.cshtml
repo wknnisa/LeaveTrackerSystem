@@ -5,94 +5,161 @@
 }
 
 <style>
-    .bg-warning.text-white {
-        background-color: #e0a800 !important;
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .empty-state {
+        border: 1px dashed #dee2e6;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        width: 100%;
+        padding: 40px 20px;
+    }
+
+        .empty-state:hover {
+            border-color: #0d6efd;
+        }
+
+    .btn {
+        cursor: pointer;
     }
 </style>
 
 <div class="container mt-4 mb-5">
-    <h3 class="fw-bold text-primary mb-4">@LangHelper.Get(Context, "PendingLeaveRequests")</h3>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-primary mb-0">@LangHelper.Get(Context, "PendingLeaveRequests")</h3>
+    </div>
+
+    <div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
+        <span class="text-muted small">@LangHelper.Get(Context, "Showing"):</span>
+
+        <span class="badge bg-primary">
+            @LangHelper.Get(Context, ViewBag.Status ?? "All")
+        </span>
+
+        @if (!string.IsNullOrEmpty(ViewBag.Status))
+        {
+            <a href="@Url.Action("AllRequests")" class="btn btn-sm btn-outline-secondary">
+                @LangHelper.Get(Context, "ClearFilter")
+            </a>
+        }
+    </div>
 
     <form method="get" asp-action="AllRequests" class="mb-4">
         <div class="d-flex align-items-center gap-2">
             <label for="status" class="form-label mb-0 fw-semibold">@LangHelper.Get(Context, "FilterByStatus")</label>
             @Html.DropDownList("status", (List<SelectListItem>)ViewBag.StatusOptions, new {
             @class = "form-select w-auto d-inline-block", onchange = "this.form.submit();"
-                        })
+            })
         </div>
     </form>
 
     @if (Model.Any())
     {
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped align-middle text-center">
-                <thead class="table-light">
-                    <tr>
-                        <th>@LangHelper.Get(Context, "Email")</th>
-                        <th>@LangHelper.Get(Context, "LeaveType")</th>
-                        <th>@LangHelper.Get(Context, "StartDate")</th>
-                        <th>@LangHelper.Get(Context, "EndDate")</th>
-                        <th>@LangHelper.Get(Context, "Reason")</th>
-                        <th>@LangHelper.Get(Context, "Status")</th>
-                        <th>@LangHelper.Get(Context, "Actions")</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var request in Model)
-                    {
-                        <tr>
-                            <td>@request.User.Email</td>
-                            <td>@(request.LeaveType.Name ?? LangHelper.Get(Context, "Other"))</td>
-                            <td>@request.StartDate.ToShortDateString()</td>
-                            <td>@request.EndDate.ToShortDateString()</td>
-                            <td>@request.Reason</td>
-                            <td>
-                                <span class="badge @(request.Status == LeaveStatus.Approved ? "bg-success" : request.Status == LeaveStatus.Rejected ? "bg-danger" : "bg-warning text-white")">
-                                    @LangHelper.Get(Context, request.Status.ToString())
-                                </span>
-                            </td>
-                            <td>
-                                @if (request.Status == LeaveStatus.Pending)
-                                {
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <form method="post" asp-action="Approve" asp-route-id="@request.Id">
-                                            <button type="submit" class="btn btn-success btn-sm rounded-2">@LangHelper.Get(Context, "Approve")</button>
-                                        </form>
-                                        <form method="post" asp-action="Reject" asp-route-id="@request.Id">
-                                            <button type="submit" class="btn btn-danger btn-sm rounded-2">@LangHelper.Get(Context, "Reject")</button>
-                                        </form>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">-</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@LangHelper.Get(Context, "Email")</th>
+                                <th>@LangHelper.Get(Context, "LeaveType")</th>
+                                <th>@LangHelper.Get(Context, "StartDate")</th>
+                                <th>@LangHelper.Get(Context, "EndDate")</th>
+                                <th class="text-center">Duration (Days)</th>
+                                <th>@LangHelper.Get(Context, "Reason")</th>
+                                <th>@LangHelper.Get(Context, "Status")</th>
+                                <th>@LangHelper.Get(Context, "Actions")</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var request in Model)
+                            {
+                                <tr>
+                                    <td>@request.User.Email</td>
+                                    <td>@(request.LeaveType.Name ?? LangHelper.Get(Context, "Other"))</td>
+                                    <td>@request.StartDate.ToShortDateString()</td>
+                                    <td>@request.EndDate.ToShortDateString()</td>
+                                    <td class="text-center">@((request.EndDate - request.StartDate).Days + 1)</td>
+                                    <td class="text-truncate" style="max-width: 200px;">@request.Reason</td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill @(request.Status == LeaveStatus.Approved ? "bg-success" : request.Status == LeaveStatus.Rejected ? "bg-danger" : "bg-warning text-dark")">
+                                            <span class="me-1">
+                                                @(request.Status == LeaveStatus.Approved ? "✔" :
+                                                  request.Status == LeaveStatus.Rejected ? "✖" : "⏳")
+                                            </span>
+                                            @LangHelper.Get(Context, request.Status.ToString())
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (request.Status == LeaveStatus.Pending)
+                                        {
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <form method="post" asp-action="Approve" asp-route-id="@request.Id" class="d-inline">
+                                                    <button type="submit"
+                                                            class="btn btn-success btn-sm rounded-2"
+                                                            onclick="if(!confirm('@LangHelper.Get(Context, "ConfirmApprove")')) return false; this.disabled=true;">
+                                                            @LangHelper.Get(Context, "Approve")
+                                                    </button>
+                                                </form>
+
+                                                <form method="post" asp-action="Reject" asp-route-id="@request.Id" class="d-inline">
+                                                    <button type="submit"
+                                                            class="btn btn-danger btn-sm rounded-2"
+                                                            onclick="if(!confirm('@LangHelper.Get(Context, "ConfirmReject")')) return false; this.disabled=true;">
+                                                            @LangHelper.Get(Context, "Reject")
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     }
     else
     {
-        <div class="alert alert-info text-center mt-4">@LangHelper.Get(Context, "NoRequestsFound")</div>
+        <div class="empty-state text-center py-5">
+            <div class="fs-3">📄</div>
+            <div class="fw-semibold mt-2">
+                @LangHelper.Get(Context, "NoRequestsFound")
+            </div>
+
+            <small class="text-muted d-block mb-3">
+                @LangHelper.Get(Context, "EmptyStateDesc")
+            </small>
+        </div>
     }
 </div>
-<div class="d-flex justify-content-center mt-3">
 
-    @if (ViewBag.Page > 1)
-    {
-        <a asp-action="AllRequests" asp-route-page="@(ViewBag.Page - 1)" asp-route-status="@ViewBag.Status"
-        class="btn btn-outline-secondary me-2">Previous</a>
-    }
+@if (Model.Any())
+{
+    <div class="d-flex justify-content-center mt-3">
 
-    <span class="badge bg-primary align-self-center px-3 py-2">@ViewBag.Page</span>
+        @if (ViewBag.Page > 1)
+        {
+            <a asp-action="AllRequests" asp-route-page="@(ViewBag.Page - 1)" asp-route-status="@ViewBag.Status"
+            class="btn btn-outline-secondary me-2">Previous</a>
+        }
 
-    @if (ViewBag.HasNextPage)
-    {
-        <a asp-action="AllRequests" asp-route-page="@(ViewBag.Page + 1)" asp-route-status="@ViewBag.Status"
-        class="btn btn-outline-secondary ms-2">Next</a>
-    }
+        <span class="badge bg-light text-dark border px-3 py-2">
+            Page @ViewBag.Page
+        </span>
 
-</div>
+        @if (ViewBag.HasNextPage)
+        {
+            <a asp-action="AllRequests" asp-route-page="@(ViewBag.Page + 1)" asp-route-status="@ViewBag.Status"
+            class="btn btn-outline-secondary ms-2">Next</a>
+        }
+
+    </div>
+}

@@ -1,9 +1,20 @@
 ﻿@{
     var role = Context.Session.GetString("Role");
-    var isLoggedIn = !string.IsNullOrWhiteSpace(role);
+    var isLoggedIn = role != null;
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
     var isLoginPage = currentController == "Account" && currentAction == "Login";
+
+}
+
+@functions {
+    public string IsActive(string controller, string action)
+    {
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+        return currentController == controller && currentAction == action ? "active fw-bold" : "text-dark";
+    }
 }
 
 <!DOCTYPE html>
@@ -19,83 +30,86 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
-                    <img src="~/img/LeaveTrackerLogo.png" alt="Leave Tracker Logo" style="height: 32px;" />
-                    <span class="fw-bold fs-5">Leave Tracker System</span>
-                </a>
+        @if (!isLoginPage)
+        {
+            <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom box-shadow mb-3">
+                <div class="container-fluid">
+                    <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
+                        <img src="~/img/LeaveTrackerLogo.png" alt="Leave Tracker Logo" style="height: 32px;" />
+                        <span class="fw-bold fs-5">Leave Tracker System</span>
+                    </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
-                        aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
 
-                <div class="collapse navbar-collapse" id="navbarContent">
-                    @if (isLoggedIn)
-                    {
+                    <div class="collapse navbar-collapse" id="navbarContent">
+                        @if (isLoggedIn)
+                        {
                         
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            @if (role == "Employee")
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                @if (role == "Employee")
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link @IsActive("Employee", "Submit")" asp-controller="Employee" asp-action="Submit">@LangHelper.Get(Context, "RequestLeave")</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link @IsActive("Employee", "MyRequests")" asp-controller="Employee" asp-action="MyRequests">@LangHelper.Get(Context, "MyRequests")</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link @IsActive("Employee", "LeaveSummary")" asp-controller="Employee" asp-action="LeaveSummary">@LangHelper.Get(Context, "LeaveSummary")</a>
+                                    </li>
+                                }
+                                @if (role == "Manager")
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link @IsActive("Manager", "AllRequests")" asp-controller="Manager" asp-action="AllRequests">@LangHelper.Get(Context, "PendingRequests")</a>
+                                    </li>
+                                }
+                                @if (role == "Admin")
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link @IsActive("Admin", "AllRequests")" asp-controller="Admin" asp-action="AllRequests">@LangHelper.Get(Context, "AllRequests")</a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                            @if (isLoggedIn)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Submit">@LangHelper.Get(Context, "RequestLeave")</a>
+                                    <span class="nav-link text-muted">
+                                        @LangHelper.Get(Context, "LoggedInAs"): <strong>@role</strong>
+                                    </span>
                                 </li>
+
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="MyRequests">@LangHelper.Get(Context, "MyRequests")</a>
+                                    @{
+                                        var currentLang = Context.Session.GetString("Lang") ?? "EN";
+                                        var toggleLang = currentLang == "EN" ? "BM" : "EN";
+                                    }
+                                    <a class="nav-link text-dark fw-bold text-uppercase" href="/Language/SwitchLanguage?lang=@toggleLang">
+                                        (@toggleLang)
+                                    </a>
                                 </li>
+
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="LeaveSummary">@LangHelper.Get(Context, "LeaveSummary")</a>
+                                    <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">@LangHelper.Get(Context, "Logout")</a>
                                 </li>
                             }
-                            @if (role == "Manager")
+
+                            else if (!isLoginPage)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Manager" asp-action="AllRequests">@LangHelper.Get(Context, "PendingRequests")</a>
-                                </li>
-                            }
-                            @if (role == "Admin")
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="AllRequests">@LangHelper.Get(Context, "AllRequests")</a>
+                                    <a class="nav-link text-primary" asp-controller="Account" asp-action="Login">@LangHelper.Get(Context, "Login")</a>
                                 </li>
                             }
                         </ul>
-                    }
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-                        @if (isLoggedIn)
-                        {
-                            <li class="nav-item">
-                                <span class="nav-link text-muted">
-                                    @LangHelper.Get(Context, "LoggedInAs"): <strong>@role</strong>
-                                </span>
-                            </li>
-
-                            <li class="nav-item">
-                                @{
-                                    var currentLang = Context.Session.GetString("Lang") ?? "EN";
-                                    var toggleLang = currentLang == "EN" ? "BM" : "EN";
-                                }
-                                <a class="nav-link text-dark fw-bold text-uppercase" href="/Language/SwitchLanguage?lang=@toggleLang">
-                                    (@toggleLang)
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">@LangHelper.Get(Context, "Logout")</a>
-                            </li>
-                        }
-
-                        else if (!isLoginPage)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-primary" asp-controller="Account" asp-action="Login">@LangHelper.Get(Context, "Login")</a>
-                            </li>
-                        }
-                    </ul>
+                    </div>
                 </div>
-            </div>
-        </nav>
+            </nav>
+        }
     </header>
     <div class="container">
         <main role="main" class="pb-3">
@@ -104,11 +118,15 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - Leave Tracker System
-        </div>
-    </footer>
+    @if (!isLoginPage)
+    {
+        <footer class="border-top footer text-muted">
+            <div class="container">
+                &copy; 2025 - Leave Tracker System
+            </div>
+        </footer>
+    }
+        
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

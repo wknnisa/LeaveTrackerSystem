@@ -4,47 +4,86 @@
     ViewData["Title"] = "Submit Leave Request";
 }
 <div class="container mt-4 mb-5">
-    <h3 class="fw-bold text-primary mb-4">@LangHelper.Get(Context, "SubmitLeaveRequest")</h3>
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <h3 class="fw-bold text-primary mb-4">@LangHelper.Get(Context, "SubmitLeaveRequest")</h3>
+            <p class="text-muted mb-3">@LangHelper.Get(Context, "SubmitLeaveSubtitle")</p>
+            @await Html.PartialAsync("_FlashMessagePartial")
 
-    @await Html.PartialAsync("_FlashMessagePartial")
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Submit" method="post" class="needs-validation" novalidate id="leaveForm">
+                        @Html.AntiForgeryToken()
 
-    <form asp-action="Submit" method="post" class="needs-validation">
-        <div class="form-group mb-3">
-            <label asp-for="StartDate" class="form-label fw-semibold"> 
-                @LangHelper.Get(Context, "StartDate") <span class="text-danger">*</span>
-            </label>
-            <input asp-for="StartDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-            <span asp-validation-for="StartDate" class="text-danger"></span>
-        </div>
-        <div class="form-group mb-3">
-            <label asp-for="EndDate" class="form-label fw-semibold">
-                @LangHelper.Get(Context, "EndDate") <span class="text-danger">*</span>
-            </label>
-            <input asp-for="EndDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-            <span asp-validation-for="EndDate" class="text-danger"></span>
-        </div>
-        <div class="form-group mb-3">
-            <label asp-for="LeaveTypeId" class="form-label fw-semibold">
-                @LangHelper.Get(Context, "LeaveType") <span class="text-danger">*</span>
-            </label>
-            <select asp-for="LeaveTypeId" asp-items="Model.LeaveTypes" class="form-select">
-                <option value="">-- @LangHelper.Get(Context, "Select") --</option>
-            </select>
-            <span asp-validation-for="LeaveTypeId" class="text-danger"></span>
-        </div>
-        <div class="form-group mb-3">
-            <label asp-for="Reason" class="form-label fw-semibold">
-                @LangHelper.Get(Context, "Reason") <span class="text-danger">*</span>
-            </label>
-            <textarea asp-for="Reason" class="form-control" rows="3"></textarea>
-            <span asp-validation-for="Reason" class="text-danger"></span>
-        </div>
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <div class="form-group mb-3">
+                    <label asp-for="StartDate" class="form-label fw-semibold"> 
+                        @LangHelper.Get(Context, "StartDate") <span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="StartDate" id="StartDate" type="date" class="form-control shadow-sm" min="@DateTime.Today.ToString("yyyy-MM-dd")" required autofocus/>
+                    <span asp-validation-for="StartDate" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="EndDate" class="form-label fw-semibold">
+                        @LangHelper.Get(Context, "EndDate") <span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="EndDate" id="EndDate" type="date" class="form-control shadow-sm" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    <span asp-validation-for="EndDate" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="LeaveTypeId" class="form-label fw-semibold">
+                        @LangHelper.Get(Context, "LeaveType") <span class="text-danger">*</span>
+                    </label>
+                    <select asp-for="LeaveTypeId" id="LeaveTypeId" asp-items="Model.LeaveTypes" class="form-select shadow-sm" required>
+                        <option value="">-- @LangHelper.Get(Context, "Select") --</option>
+                    </select>
+                    <span asp-validation-for="LeaveTypeId" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="Reason" class="form-label fw-semibold">
+                        @LangHelper.Get(Context, "Reason") <span class="text-danger">*</span>
+                    </label>
+                    <textarea asp-for="Reason" id="Reason" class="form-control shadow-sm" rows="3" placeholder="@LangHelper.Get(Context, "EnterReasonPlaceholder")" required></textarea>
+                    <span asp-validation-for="Reason" class="text-danger"></span>
+                </div>
 
-        <button type="submit" class="btn btn-primary mt-2">@LangHelper.Get(Context, "Submit")</button>
-    </form>
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">@LangHelper.Get(Context, "SubmitRequest")</button>
+                    <a asp-action="MyRequests" class="btn btn-outline-secondary">@LangHelper.Get(Context, "Cancel")</a>
+                </div>
+            </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts
 {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        const start = document.getElementById("StartDate");
+        const end = document.getElementById("EndDate");
+
+        if (start && end) {
+            if (start.value)
+            {
+                end.min = start.value;
+            }
+
+            start.addEventListener("change", () => {
+                end.min = start.value;
+            });
+        }
+
+        const form = document.getElementById("leaveForm");
+
+        form.addEventListener("submit", function (e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                form.classList.add("was-validated");
+            }
+        });
+    </script>
 }

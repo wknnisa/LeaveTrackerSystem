@@ -43,6 +43,9 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             ViewBag.LabelsJson = JsonConvert.SerializeObject(monthlyData.Keys);
             ViewBag.DataJson = JsonConvert.SerializeObject(monthlyData.Values);
 
+            var hasBarData = monthlyData.Values.Any(v => v > 0);
+            ViewBag.HasBarData = hasBarData;
+
             ViewBag.Total = total;
             ViewBag.Approved = approved;
             ViewBag.Pending = pending;

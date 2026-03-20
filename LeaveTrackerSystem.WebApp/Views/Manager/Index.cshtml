@@ -2,49 +2,123 @@
     ViewData["Title"] = "Manager Dashboard";
 }
 
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+        .cursor-pointer:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+        }
+
+    a.text-decoration-none {
+        color: inherit;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .card-body {
+        min-height: 110px;
+    }
+
+    .empty-state {
+        border: 1px dashed #dee2e6;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        width: 100%;
+        padding: 40px 20px;
+    }
+
+        .empty-state:hover {
+            border-color: #0d6efd;
+        }
+</style>
+
 <div class="container mt-4 mb-5">
-    <h2 class="fw-bold text-primary mb-3">@LangHelper.Get(Context, "ManagerDashboard")</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold text-primary mb-0">@LangHelper.Get(Context, "ManagerDashboard")</h2>
+    </div>
+   
     <p class="text-muted mb-4">@LangHelper.Get(Context, "WelcomeBack") @ViewBag.Name 👋</p>
 
-    <div class="row mb-4">
+    <div class="row mb-3">
         <div class="col-md-3">
-            <div class="card text-center shadow-sm border-0">
-                <div class="card-body">
-                    <h6>@LangHelper.Get(Context, "PendingApprovals")</h6>
-                    <h3 class="fw-bold text-warning">@ViewBag.Pending</h3>
+            <a asp-action="AllRequests" asp-route-status="Pending" asp-route-page="1" class="text-decoration-none">
+                <div class="card text-center shadow-sm border-0 cursor-pointer">
+                    <div class="card-body">
+                        <h6>@LangHelper.Get(Context, "PendingApprovals")</h6>
+                        <h3 class="fw-bold text-warning display-6">@ViewBag.Pending</h3>
+                        <small class="text-muted">@LangHelper.Get(Context, "AwaitingApproval")</small>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card text-center shadow-sm border-0">
-                <div class="card-body">
-                    <h6>@LangHelper.Get(Context, "Approved")</h6>
-                    <h3 class="fw-bold text-success">@ViewBag.Approved</h3>
+            <a asp-action="AllRequests" asp-route-status="Approved" asp-route-page="1" class="text-decoration-none">
+                <div class="card text-center shadow-sm border-0 cursor-pointer">
+                    <div class="card-body">
+                        <h6>@LangHelper.Get(Context, "Approved")</h6>
+                        <h3 class="fw-bold text-success display-6">@ViewBag.Approved</h3>
+                        <small class="text-muted">@LangHelper.Get(Context, "SuccessfullyApproved")</small>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card text-center shadow-sm border-0">
-                <div class="card-body">
-                    <h6>@LangHelper.Get(Context, "Rejected")</h6>
-                    <h3 class="fw-bold text-danger">@ViewBag.Rejected</h3>
+            <a asp-action="AllRequests" asp-route-status="Rejected" asp-route-page="1" class="text-decoration-none">
+                <div class="card text-center shadow-sm border-0 cursor-pointer">
+                    <div class="card-body">
+                        <h6>@LangHelper.Get(Context, "Rejected")</h6>
+                        <h3 class="fw-bold text-danger display-6">@ViewBag.Rejected</h3>
+                        <small class="text-muted">@LangHelper.Get(Context, "NotApproved")</small>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card text-center shadow-sm border-0">
-                <div class="card-body">
-                    <h6>@LangHelper.Get(Context, "TotalReviewed")</h6>
-                    <h3 class="fw-bold text-primary">@ViewBag.Total</h3>
+            <a asp-action="AllRequests" asp-route-page="1" class="text-decoration-none">
+                <div class="card text-center shadow-sm border-0 cursor-pointer">
+                    <div class="card-body">
+                        <h6>@LangHelper.Get(Context, "TotalReviewed")</h6>
+                        <h3 class="fw-bold text-primary display-6">@ViewBag.Total</h3>
+                        <small class="text-muted">@LangHelper.Get(Context, "AllReviewed")</small>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 mb-5">
-        <div class="card-body">
-            <h5 class="fw-semibold text-center mb-3">@LangHelper.Get(Context, "ApprovalsByMonth")</h5>
-            <canvas id="approvalChart" class="w-100" style="max-width: 700px; margin: auto;"></canvas>
+    <div class="mt-3">
+        <div class="card shadow-sm border-0" style="min-height: 320px;">
+            <div class="card-body">
+                <h6 class="fw-semibold text-center mb-3">@LangHelper.Get(Context, "ApprovalsByMonth")</h6>
+                
+                @if (ViewBag.HasBarData == true)
+                {
+                    <canvas id="approvalChart" style="max-height: 300px;"></canvas>
+                }
+                else
+                {
+                    <div class="empty-state text-center py-5">
+                        <div class="fs-3">📊</div>
+                        <div class="fw-semibold mt-2">
+                            @LangHelper.Get(Context, "ManagerEmptyStateTitle")
+                        </div>
+                        <small class="text-muted">
+                            @LangHelper.Get(Context, "ManagerEmptyStateDesc")
+                        </small>
+                        <div class="mt-3">
+                            <a asp-action="AllRequests" class="btn btn-primary btn-sm">
+                                @LangHelper.Get(Context, "ViewAllRequests")
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 
@@ -59,10 +133,13 @@
         const labels = JSON.parse('@Html.Raw(ViewBag.LabelsJson ?? "[]")');
         const data = JSON.parse('@Html.Raw(ViewBag.DataJson ?? "[]")');
 
-        new Chart(document.getElementById('approvalChart'), {
+        const ctx = document.getElementById('approvalChart');
+        if (ctx && data.length > 0 && data.some(x => x > 0))
+        {
+          new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels, 
+                labels: labels,
                 datasets: [{
                     label: "@LangHelper.Get(Context, "ApprovedRequests")",
                     data: data,
@@ -78,6 +155,8 @@
                     y: { beginAtZero: true }
                 }
             }
-        });
+          });
+            
+        }
     </script>
 }

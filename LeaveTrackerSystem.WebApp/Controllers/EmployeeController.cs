@@ -50,6 +50,9 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             ViewBag.LabelsJson = JsonConvert.SerializeObject(usedLeaveByType.Keys);
             ViewBag.DataJson = JsonConvert.SerializeObject(usedLeaveByType.Values);
 
+            var hasPieData = usedLeaveByType.Values.Any(v => v > 0);
+            ViewBag.HasPieData = hasPieData;
+
             ViewBag.TotalRequests = total;
             ViewBag.Approved = approved;
             ViewBag.Pending = pending;
@@ -91,40 +94,41 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 return RedirectToAction("Login", "Account", new { msg = "expired" });
             }
 
+            var email = SessionHelper.GetUserEmail(HttpContext)!;
+
             if (!ModelState.IsValid)
             {
-                var types = _employeeService.GetLeaveTypes();
-
-                model.LeaveTypes = types.Select(t => new SelectListItem
-                    {
-                        Text = t.Name,
-                        Value = t.Id.ToString()
-                    }).ToList();
-
+                PopulateLeaveTypes(model);
                 return View(model);
             }
 
-            var email = SessionHelper.GetUserEmail(HttpContext)!;
+            var startDate = model.StartDate!.Value;
+            var endDate = model.EndDate!.Value;
 
             var dto = new LeaveRequestDto
             {
                 LeaveTypeId = model.LeaveTypeId,
-                StartDate = model.StartDate ?? DateTime.UtcNow,
-                EndDate = model.EndDate ?? DateTime.UtcNow,
-                Reason = model.Reason
+                StartDate = startDate,
+                EndDate = endDate,
+                Reason = model.Reason.ToUpper()
             };
 
             var (success, message) = _employeeService.SubmitLeaveRequest(email, dto);
 
             if (success)
             {
-                var selectedType = _employeeService.GetLeaveTypes().FirstOrDefault(t => t.Id == model.LeaveTypeId);
+                var types = _employeeService.GetLeaveTypes();
+                var selectedType = types.FirstOrDefault(t => t.Id == model.LeaveTypeId);
 
                 var request = new LeaveRequest
                 {
-                    LeaveType = new LeaveType { Name = selectedType?.Name ?? LangHelper.Get(HttpContext, "Unknown") },
-                    StartDate = model.StartDate ?? DateTime.UtcNow,
-                    EndDate = model.EndDate ?? DateTime.UtcNow
+                    LeaveType = new LeaveType
+                    {
+                        Id = selectedType?.Id ?? 0,
+                        Name = selectedType?.Name ?? LangHelper.Get(HttpContext, "Unknown")
+                    },
+                    StartDate = startDate,
+                    EndDate = endDate
                 };
 
                 _notificationService.NotifyLeaveSubmission(email, request);
@@ -133,6 +137,17 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
             TempData[success ? "Success" : "Error"] = success ? LangHelper.Get(HttpContext, "LeaveSubmitSuccess") : LangHelper.Get(HttpContext, "LeaveSubmitFail");
             return RedirectToAction("MyRequests");
+        }
+
+        private void PopulateLeaveTypes(LeaveRequestViewModel model)
+        {
+            var types = _employeeService.GetLeaveTypes();
+
+            model.LeaveTypes = types.Select(t => new SelectListItem
+            {
+                Text = t.Name,
+                Value = t.Id.ToString()
+            }).ToList();
         }
 
         public IActionResult MyRequests(string? status, int page = 1)
@@ -178,10 +193,16 @@ namespace LeaveTrackerSystem.WebApp.Controllers
             var usedLeaveByType = summary.ToDictionary(k => k.Key, v => v.Value.Used);
             var monthlyUsage = _employeeService.GetMonthlyUsage(email);
 
+            var pieDataList = usedLeaveByType.Values.ToList();
+            var barDataList = monthlyUsage.Values.ToList();
+
             ViewBag.LabelsJson = JsonConvert.SerializeObject(usedLeaveByType.Keys);
             ViewBag.DataJson = JsonConvert.SerializeObject(usedLeaveByType.Values);
             ViewBag.BarLabelsJson = JsonConvert.SerializeObject(monthlyUsage.Keys);
             ViewBag.BarDataJson = JsonConvert.SerializeObject(monthlyUsage.Values);
+
+            ViewBag.HasPieData = pieDataList.Any(x => x > 0);
+            ViewBag.HasBarData = barDataList.Any(x => x > 0);
 
             return View(summary);
         }

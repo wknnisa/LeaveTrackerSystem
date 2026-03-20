@@ -4,22 +4,40 @@
     ViewData["Title"] = "Login";
 }
 
-<h2>Login</h2>
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow-sm p-4" style="width: 400px;">
+        
+        <div class="text-center mb-3">
+            <img src="~/img/LeaveTrackerLogo.png" alt="Leave Tracker Logo" style="height: 40px;" />
+            <h5 class="mt-2">Leave Tracker System</h5>
+        </div>
 
-<form asp-action="Login" method="post">
-    <div class="form-group">
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Password"></label>
-        <input asp-for="Password" class="form-control">
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
+        <h4 class="text-center mb-3">Login</h4>
 
-    <button type="submit" class="btn btn-primary mt-2">Login</button>
-</form>
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger"> @ViewBag.Error </div>
+        }
+
+        <form asp-action="Login" method="post">
+            <div class="mb-3">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" placeholder="Enter your email" autofocus />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+
+        <p class="text-muted text-center mt-3" style="font-size: 0.9rem;"> Internal system access only </p>
+
+        <div class="mt-2 small text-muted text-center"> Demo: employee@example.com | manager@example.com | admin@example.com </div>
+    </div>
+</div>
 
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }

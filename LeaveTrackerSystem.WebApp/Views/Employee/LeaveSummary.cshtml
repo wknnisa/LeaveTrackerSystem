@@ -7,8 +7,9 @@
 <style>
     .chart-container {
         width: 100%;
-        margin: 0 auto;
-        max-width: 700px;
+        max-width: 100%;
+        display: flex;
+        justify-content: center;
     }
 
     .chart-placeholder {
@@ -18,10 +19,52 @@
         padding: 15px 0;
         min-height: 60px;
     }
+
+    .empty-state {
+        text-align: center;
+        padding: 30px 20px;
+        border: 1px dashed #dee2e6;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        width: 100%;
+        max-width: 450px;
+        transition: 0.2s;
+    }
+
+        .empty-state:hover {
+            border-color: #0d6efd;
+        }
+
+    .empty-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .empty-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .empty-desc {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 15px;
+    }
+
+    h2 {
+        font-weight: 600;
+    }
+
+    h3 {
+        margin-top: 20px;
+        font-size: 1.1rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
 </style>
 
 <div class="d-flex align-items-center mb-4">
-    <img src="~/img/LeaveTrackerLogo.png" alt="LogoIpsum Company Logo" class="img-fluid me-3" style="height: 60px;">
+    <img src="~/img/LeaveTrackerLogo.png" alt="LogoIpsum Company Logo" class="img-fluid me-3" style="height: 50px;">
     <div>
         <h1 class="mb-0">LogoIpsum HRIS</h1>
         <small class="text-muted mb-0">@LangHelper.Get(Context, "LeaveSummaryReports")</small>
@@ -32,74 +75,119 @@
 
 <div class="container">
 
+    @{
+        bool hasPieData = ViewBag.HasPieData ?? false;
+        bool hasBarData = ViewBag.HasBarData ?? false;
+    }
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">@LangHelper.Get(Context, "LeaveSummaryByType")</h2>
         <div>
-            <a href="@Url.Action("ExportSummary", "Employee")" class="btn btn-outline-primary ms-3">@LangHelper.Get(Context, "DownloadPDF")</a>
-        </div>
-    </div>
-
-    <table class="table table-striped">
-        <thead class="table-dark text-center">
-            <tr>
-                <th>@LangHelper.Get(Context, "LeaveType")</th>
-                <th>@LangHelper.Get(Context, "Used")</th>
-                <th>@LangHelper.Get(Context, "Remaining")</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Any())
+            @if (!hasPieData && !hasBarData)
             {
-                foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@item.Key</td>
-                        <td class="text-center">@item.Value.used</td>
-                        <td class="text-center">@item.Value.remaining</td>
-                    </tr>
-                }
+                <a class="btn btn-outline-secondary ms-3 disabled" title="No data available">
+                    @LangHelper.Get(Context, "DownloadPDF")
+                </a>
             }
             else
             {
-                <tr>
-                    <td colspan="3" class="text-center text-muted"> @LangHelper.Get(Context, "NoLeaveData")</td>
-                </tr>
+                <a href="@Url.Action("ExportSummary", "Employee")" class="btn btn-outline-primary ms-3" >
+                    @LangHelper.Get(Context, "DownloadPDF")
+                </a>
             }
-        </tbody>
-    </table>
-
-    @{
-        bool hasPieData = ViewBag.LabelsJson?.ToString() != "[]" && ViewBag.DataJson.ToString() != "[]";
-        bool hasBarData = ViewBag.BarLabelsJson.ToString() != "[]" && ViewBag.BarDataJson.ToString() != "[]";
-    }
-
-    <h3>@LangHelper.Get(Context, "LeaveUsageBreakdown")</h3>
-    <div id="pieContainer" class="chart-container">
-        @if (hasPieData)
-        {
-            <canvas id="leavePieChart" height="300"></canvas>
-        }
-        else
-        {
-            <div class="alert alert-info text-center chart-placeholder">
-                @LangHelper.Get(Context, "NoPieData")
-            </div>
-        }
+        </div>
     </div>
 
-    <h3>@LangHelper.Get(Context, "LeaveRequestsPerMonth")</h3>
-    <div id="barContainer" class="chart-container">
-        @if (hasBarData)
-        {
-            <canvas id="leaveBarChart" height="300"></canvas>
-        }
-        else
-        {
-            <div class="alert alert-info text-center chart-placeholder">
-                @LangHelper.Get(Context, "NoBarData")
+  <div class="card shadow-sm mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th>@LangHelper.Get(Context, "LeaveType")</th>
+                        <th>@LangHelper.Get(Context, "Used")</th>
+                        <th>@LangHelper.Get(Context, "Remaining")</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Key</td>
+                                <td class="text-center">@item.Value.used</td>
+                                <td class="text-center">@item.Value.remaining</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-4">
+                                <div class="fw-semibold">@LangHelper.Get(Context, "NoLeaveData")</div>
+                                <small>@LangHelper.Get(Context, "SubmitLeaveToStart")</small>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row mt-4 px-3 pb-3">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 p-3 h-100">
+                    <h3>@LangHelper.Get(Context, "LeaveUsageBreakdown")</h3>
+                    <div id="pieContainer" class="chart-container">
+                        @if (hasPieData)
+                        {
+                            <canvas id="leavePieChart" height="300"></canvas>
+                        }
+                        else
+                        {
+                            <div class="empty-state">
+                                <div class="empty-icon">📊</div>
+                                <div class="empty-title">@LangHelper.Get(Context, "NoLeaveData")</div>
+                                <div class="empty-desc">
+                                    @LangHelper.Get(Context, "SubmitLeaveToViewBreakdown")
+                                </div>
+                                <a asp-controller="Employee" asp-action="Submit" class="btn btn-primary btn-sm">
+                                    @LangHelper.Get(Context, "RequestLeave")
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
-        }
+
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 p-3 h-100">
+                    <h3>@LangHelper.Get(Context, "LeaveRequestsPerMonth")</h3>
+                    <div id="barContainer" class="chart-container">
+                        @if (hasBarData)
+                        {
+                            <canvas id="leaveBarChart" height="300"></canvas>
+                        }
+                        else
+                        {
+                            <div class="empty-state">
+                                <div class="empty-icon">📅</div>
+                                <div class="empty-title">@LangHelper.Get(Context, "NoMonthlyData")</div>
+                                <div class="empty-desc">
+                                    @LangHelper.Get(Context, "MonthlyDataWillAppear")
+                                </div>
+                                <a asp-controller="Employee" asp-action="Submit" class="btn btn-primary btn-sm">
+                                    @LangHelper.Get(Context, "RequestLeave")
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+  </div>
 </div>
 
 @section Scripts {
@@ -107,18 +195,11 @@
         const labels = JSON.parse('@Html.Raw(ViewBag.LabelsJson ?? "[]")');
         const data = JSON.parse('@Html.Raw(ViewBag.DataJson ?? "[]")');
 
-        let total = 0;
-        for (let i = 0; i < data.length; i++) {
-            total += data[i];
-        }
+        const pieCanvas = document.getElementById('leavePieChart');
 
-        if (labels.length === 0 || data.length === 0 || total === 0)
+        if (pieCanvas && labels.length > 0 && data.length > 0)
         {
-            document.getElementById("pieContainer").innerHTML = "<div class='alert alert-info text-center chart-placeholder'>@LangHelper.Get(Context, "NoPieData")</div>";
-        }
-        else
-        {
-            const ctx = document.getElementById('leavePieChart').getContext('2d');
+            const ctx = pieCanvas.getContext('2d');
             new Chart(ctx, {
                 type: 'pie',
                 data: {
@@ -142,25 +223,18 @@
                         }
                     }
                 }
+
             });
         }
 
         const barLabels = JSON.parse('@Html.Raw(ViewBag.BarLabelsJson ?? "[]")');
         const barData = JSON.parse('@Html.Raw(ViewBag.BarDataJson ?? "[]")');
 
-        let barTotal = 0;
+        const barCanvas = document.getElementById('leaveBarChart');
 
-        for (let i = 0; i < barData.length; i++) {
-            barTotal += barData[i];
-        }
-
-        if (barLabels.length === 0 || barData.length === 0 || barTotal === 0)
+        if (barCanvas && barLabels.length > 0 && barData.length > 0)
         {
-            document.getElementById("barContainer").innerHTML = "<div class='alert alert-info text-center chart-placeholder'>@LangHelper.Get(Context, "NoBarData")</div>";
-        }
-        else
-        {
-            const barCtx = document.getElementById('leaveBarChart').getContext('2d');
+            const barCtx = barCanvas.getContext('2d');
             new Chart(barCtx, {
                 type: 'bar',
                 data: {
@@ -171,22 +245,22 @@
                         backgroundColor: '#36A2EB'
                     }]
                 },
-               options: {
-                   responsive: true,
-                   plugins: {
+                options: {
+                    responsive: true,
+                    plugins: {
                         legend: { display: false },
                         title: {
                             display: true,
                             text: '@LangHelper.Get(Context, "MonthlyLeaveUsage")'
                         }
-                   },
-                   scales: {
-                       y: {
-                           beginAtZero: true,
-                           precision: 0
-                       }
-                   }
-               }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            precision: 0
+                        }
+                    }
+                }
             });
         }
     </script>

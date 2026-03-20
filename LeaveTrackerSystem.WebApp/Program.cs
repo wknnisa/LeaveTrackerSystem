@@ -20,7 +20,23 @@ var builder = WebApplication.CreateBuilder(args);
 //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // SQLite database path for Azure App Service
-var dbPath = Path.Combine(@"D:\home", "leavetracker.db");
+var env = builder.Environment;
+
+string dbPath;
+
+if (env.IsDevelopment())
+{
+    // Local
+    dbPath = Path.Combine(env.ContentRootPath, "App_Data", "leavetracker.db");
+}
+else
+{
+    // Azure
+    dbPath = Path.Combine(env.ContentRootPath, "App_Data", "leavetracker.db");
+}
+
+// Ensure folder exists
+Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
 
 builder.Services.AddDbContext<LeaveTrackerDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
@@ -75,7 +91,7 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<LeaveTrackerDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 app.Run();
