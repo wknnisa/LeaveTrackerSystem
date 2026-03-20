@@ -3,9 +3,11 @@
 
 A role-based Leave Management System built with **ASP.NET Core MVC** following **Onion Architecture** principles.
 
-The system simulates an internal enterprise HR workflow where employees submit leave requests, managers review and approve or reject requests, and administrators monitor leave records.
+The system simulates a real-world internal HR workflow where employees submit leave requests, managers review and approve or reject them, and administrators monitor system-wide leave data.
 
-The project demonstrates several backend engineering practices including **layered architecture, REST APIs, logging, middleware, reporting dashboards, PDF export, and unit testing**.
+The project demonstrates backend engineering practices including layered architecture, workflow validation, reporting dashboards, PDF export, and real-world UI handling such as empty data states, safe chart rendering, and conditional feature availability scenarios.
+
+💡 Focused on real-world system behavior including validation, workflow consistency, and handling edge cases to ensure reliable and predictable user experience.
 
 ---
 
@@ -41,6 +43,7 @@ password: admin123
 - 🧑‍💼 Role-based access: **Admin, Manager, Employee**
 - 🔐 Session-based authentication using ASP.NET Core session
 - ⏱ Session timeout handling with automatic login redirect
+- 🧭 Active navigation highlighting in the navbar for improved user experience
 
 ### Leave Management
 - 📝 Employee leave request submission
@@ -54,6 +57,9 @@ password: admin123
 - 🥧 Pie chart for leave type distribution
 - 📈 Monthly leave usage bar chart
 - 🖨 Export leave summary to PDF using **PdfSharpCore**
+- 🧩 Proper empty state handling across dashboards and tables
+- 🚫 Safe Chart.js rendering (prevents display when no data)
+- 📄 Conditional PDF export (disabled when no data available)
 
 ### Backend Engineering Practices
 - 🧱 **Onion Architecture**
@@ -66,6 +72,7 @@ password: admin123
 - 📡 **Request logging middleware**
 - 🧪 **Unit testing using xUnit and FluentAssertions**
 - 📦 Dependency Injection across application layers
+- 🗄️ Entity Framework Core (ORM) for database interaction
 
 ---
 
@@ -102,8 +109,8 @@ This ensures leave requests follow a **controlled approval process before being 
 - ASP.NET Core MVC
 - C#
 - Entity Framework Core
-- SQLite (used for WebApp demo deployment)
-- SQL Server (used by API project)
+- SQLite (used for lightweight WebApp deployment and demo)
+- SQL Server (used in API project for enterprise-style data handling)
 
 ### Frontend
 - Razor Views
@@ -165,14 +172,12 @@ Entity relationship design:
 
 Preview of major UI pages and reporting features.
 
-![Login Page](docs/screenshots/LoginPage_v1.1.png)
-![Employee Dashboard](docs/screenshots/EmployeeDashboard_v1.1.png)
-![Submit Leave Form](docs/screenshots/SubmitLeaveForm_v1.1.png)
-![My Leave Requests](docs/screenshots/MyLeaveRequests_v1.1.png)
-![Manager Approval](docs/screenshots/ManagerPendingRequests_v1.1.png)
-![Leave Summary Table](docs/screenshots/LeaveSummaryTable_v1.1.png)
-![Leave Usage Pie Chart](docs/screenshots/LeaveSummaryPieChart_v1.1.png)
-![Monthly Leave Bar Chart](docs/screenshots/LeaveSummaryBarChart_v1.1.png)
+![Login Page](docs/screenshots/LoginPage_v1.2.png)
+![Employee Dashboard](docs/screenshots/EmployeeDashboard_v1.2.png)
+![Submit Leave Form](docs/screenshots/SubmitLeaveForm_v1.2.png)
+![My Leave Requests](docs/screenshots/MyLeaveRequests_v1.2.png)
+![Manager Approval](docs/screenshots/ManagerPendingRequests_v1.2.png)
+![Leave Summary Dashboard](docs/screenshots/LeaveSummaryDashboard_v1.2.png)
 ![PDF Export](docs/screenshots/LeaveSummaryPdf_v1.1.png)
 
 ---
@@ -244,7 +249,7 @@ These endpoints demonstrate how backend services can be exposed through a REST A
 
 ## 📌 Project Status
 
-Final bugfix pass completed and core workflow verified.
+Core workflow fully implemented and validated through final bugfix pass.
 
 Implemented features include:
 
@@ -255,6 +260,7 @@ Implemented features include:
  - Structured logging and exception handling
  - Pagination for large datasets
  - Unit testing for core business logic
+ - Improved UI reliability by handling empty data scenarios across charts, tables, and reports
 
 The system is ready for deployment and demonstration as a backend portfolio project.
 

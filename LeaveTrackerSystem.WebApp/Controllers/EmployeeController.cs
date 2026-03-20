@@ -110,7 +110,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 LeaveTypeId = model.LeaveTypeId,
                 StartDate = startDate,
                 EndDate = endDate,
-                Reason = model.Reason.ToUpper()
+                Reason = model.Reason
             };
 
             var (success, message) = _employeeService.SubmitLeaveRequest(email, dto);

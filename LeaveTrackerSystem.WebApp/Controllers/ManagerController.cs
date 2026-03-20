@@ -5,6 +5,7 @@ using LeaveTrackerSystem.WebApp.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
+using System.Net.NetworkInformation;
 
 namespace LeaveTrackerSystem.WebApp.Controllers
 {
@@ -87,7 +88,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Approve(int id)
+        public IActionResult Approve(int id, string? status, int page = 1)
         {
             var request = _managerService.UpdateLeaveStatus(id, LeaveStatus.Approved);
 
@@ -111,12 +112,12 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 TempData["Error"] = LangHelper.Get(HttpContext, "RejectFailedProcessed");
             }
 
-            return RedirectToAction("AllRequests");
+            return RedirectToAction("AllRequests", new { status, page });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Reject(int id)
+        public IActionResult Reject(int id, string? status, int page = 1)
         {
             var request = _managerService.UpdateLeaveStatus(id, LeaveStatus.Rejected);
 
@@ -139,7 +140,7 @@ namespace LeaveTrackerSystem.WebApp.Controllers
                 TempData["Error"] = LangHelper.Get(HttpContext, "RejectFailedProcessed");
             }
 
-            return RedirectToAction("AllRequests");
+            return RedirectToAction("AllRequests", new { status, page });
         }
     }
 }

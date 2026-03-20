@@ -96,19 +96,21 @@
                                         @if (request.Status == LeaveStatus.Pending)
                                         {
                                             <div class="d-flex justify-content-center gap-2">
-                                                <form method="post" asp-action="Approve" asp-route-id="@request.Id" class="d-inline">
-                                                    <button type="submit"
-                                                            class="btn btn-success btn-sm rounded-2"
-                                                            onclick="if(!confirm('@LangHelper.Get(Context, "ConfirmApprove")')) return false; this.disabled=true;">
-                                                            @LangHelper.Get(Context, "Approve")
+                                                <form method="post" asp-action="Approve" asp-route-id="@request.Id" asp-route-status="@ViewBag.Status"
+                                                asp-route-page="@ViewBag.Page" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-success btn-sm rounded-2"
+                                                    onclick="return confirm('@LangHelper.Get(Context, "ConfirmApprove")');">
+                                                        @LangHelper.Get(Context, "Approve")
                                                     </button>
                                                 </form>
 
-                                                <form method="post" asp-action="Reject" asp-route-id="@request.Id" class="d-inline">
-                                                    <button type="submit"
-                                                            class="btn btn-danger btn-sm rounded-2"
-                                                            onclick="if(!confirm('@LangHelper.Get(Context, "ConfirmReject")')) return false; this.disabled=true;">
-                                                            @LangHelper.Get(Context, "Reject")
+                                                <form method="post" asp-action="Reject" asp-route-id="@request.Id" asp-route-status="@ViewBag.Status"
+                                                asp-route-page="@ViewBag.Page" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-danger btn-sm rounded-2"
+                                                    onclick="return confirm('@LangHelper.Get(Context, "ConfirmReject")');">
+                                                        @LangHelper.Get(Context, "Reject")
                                                     </button>
                                                 </form>
                                             </div>
